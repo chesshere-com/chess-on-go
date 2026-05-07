@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deep_perft:
+        description: "Run deep known-position perft checks"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+  schedule:
+    - cron: "0 3 * * 0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+      - name: Run unit tests
+        run: go test ./...
+      - name: Run race tests
+        run: go test -race ./...
+      - name: Run vet
+        run: go vet ./...
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
+      - name: Run staticcheck
+        run: staticcheck ./...
+
+  benchmark-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+      - name: Run benchmark smoke check
+        run: make bench-smoke
+
+  manual-deep-perft:
+    if: github.event_name == 'workflow_dispatch' && inputs.deep_perft == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+      - name: Run deep perft
+        run: CHESSONGO_DEEP_PERFT=1 go test -run TestPerftKnownPositionsDeep -count=1 ./...
+
+  scheduled-deep-checks:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: true
+      - name: Run deep perft
+        run: CHESSONGO_DEEP_PERFT=1 go test -run TestPerftKnownPositionsDeep -count=1 ./...
+      - name: Run heavy randomized invariant tests
+        run: CHESSONGO_HEAVY_RANDOM=1 go test -run TestRandomGamesMaintainInvariantsAndUndo -count=1 ./...
+      - name: Run FEN fuzzing
+        run: go test -run=^$ -fuzz=FuzzLoadFENDoesNotPanic -fuzztime=30s ./...

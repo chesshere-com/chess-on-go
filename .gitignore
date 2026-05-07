@@ -1,0 +1,11 @@
+*.out
+*.test
+*.prof
+*.pprof
+*.trace
+bench-current.txt
+bench-before.txt
+bench-smoke.txt
+bench-*.txt
+coverage.out
+pgn_coverage.out

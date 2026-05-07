@@ -1,0 +1,6 @@
+[Event "Promotion Mate"]
+[SetUp "1"]
+[FEN "4k3/P7/4K3/8/8/8/8/8 w - - 0 1"]
+[Result "1-0"]
+
+1. a8=Q# 1-0

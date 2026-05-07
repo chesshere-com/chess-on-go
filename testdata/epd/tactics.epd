@@ -1,0 +1,3 @@
+# Tactical opcode fixtures.
+4k3/8/8/8/8/8/5r2/4K3 w - - bm Kxf2; am Kf1; id "king capture tactic";
+r3k2r/8/8/8/8/8/8/R3K2R w KQkq - bm O-O O-O-O; id "castling choices";

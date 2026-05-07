@@ -1,0 +1,9 @@
+[Event "Club \"Rapid\""]
+[Site "Berlin"]
+[Date "2026.05.07"]
+[Round "1"]
+[White "Alice"]
+[Black "Bob"]
+[Result "*"]
+
+1. e4 {King pawn} e5 $1 2. Nf3 (2. Bc4 {Italian} Nf6 (2... Bc5)) 2... Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 *

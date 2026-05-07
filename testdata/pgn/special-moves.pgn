@@ -1,0 +1,6 @@
+[Event "Special Moves"]
+[SetUp "1"]
+[FEN "4k3/P7/8/8/8/8/8/4K3 w - - 0 1"]
+[Result "*"]
+
+1. a8=Q Ke7 2. Qa7+ Ke6 *
