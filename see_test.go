@@ -221,3 +221,18 @@ func TestSEE_EnPassant(t *testing.T) {
 		},
 	})
 }
+
+func TestSEE_Promotion(t *testing.T) {
+	runSEECases(t, []seeCase{
+		{
+			name:     "pawn promotes onto empty rank, king recaptures (spec #6)",
+			fen:      "4k3/8/8/8/8/8/3p4/4K3 w - - 0 1",
+			from:     "d2", to: "d1", expected: -100,
+		},
+		{
+			name:     "pawn captures rook on 8th rank with promotion (spec #15)",
+			fen:      "4k2r/6P1/8/8/8/8/8/4K3 w - - 0 1",
+			from:     "g7", to: "h8", expected: 1300,
+		},
+	})
+}
