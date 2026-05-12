@@ -51,7 +51,9 @@ func (g *Game) SEE(from, to Square) int {
 	moverColor := mover.Color()
 	moverKind := mover.Kind()
 
+	toBB := Bitboard(1) << uint(to)
 	fromBB := Bitboard(1) << uint(from)
+	promoMask := RANK1_MASK | RANK8_MASK
 
 	var capturedValue int
 	occ := g.Occupied
@@ -69,6 +71,11 @@ func (g *Game) SEE(from, to Square) int {
 		capturedValue = seePieceValue[g.Squares[to].Kind()]
 	}
 	moverValueOnTo := seePieceValue[moverKind]
+	isPromo := moverKind == PAWN && (toBB&promoMask) != 0
+	if isPromo {
+		capturedValue += seePieceValue[QUEEN] - seePieceValue[PAWN]
+		moverValueOnTo = seePieceValue[QUEEN]
+	}
 
 	occ &^= fromBB
 
@@ -99,6 +106,10 @@ func (g *Game) SEE(from, to Square) int {
 		d++
 		gain[d] = pieceOnTo - gain[d-1]
 		nextValue := seePieceValue[attackerKind]
+		if attackerKind == PAWN && (toBB&promoMask) != 0 {
+			gain[d] += seePieceValue[QUEEN] - seePieceValue[PAWN]
+			nextValue = seePieceValue[QUEEN]
+		}
 
 		occ &^= Bitboard(1) << uint(attackerSq)
 
