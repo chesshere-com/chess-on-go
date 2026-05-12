@@ -234,5 +234,10 @@ func TestSEE_Promotion(t *testing.T) {
 			fen:      "4k2r/6P1/8/8/8/8/8/4K3 w - - 0 1",
 			from:     "g7", to: "h8", expected: 1300,
 		},
+		{
+			name:     "mid-sequence pawn recapture promotes",
+			fen:      "4k2R/5nP1/8/8/8/8/8/4K3 b - - 0 1",
+			from:     "f7", to: "h8", expected: -620,
+		},
 	})
 }
