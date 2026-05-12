@@ -211,3 +211,13 @@ func TestSEE_BasicCaptures(t *testing.T) {
 		},
 	})
 }
+
+func TestSEE_EnPassant(t *testing.T) {
+	runSEECases(t, []seeCase{
+		{
+			name:     "white pawn EP captures black pawn (spec #5)",
+			fen:      "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1",
+			from:     "e5", to: "d6", expected: 100,
+		},
+	})
+}
