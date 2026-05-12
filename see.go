@@ -48,3 +48,70 @@ func (g *Game) SEE(from, to Square) int {
 	}
 	return 0 // TODO: implement in later tasks
 }
+
+// seeComputePins returns the absolute-pin snapshot for `side`:
+//
+//   - `pinned`: bitboard of squares holding pieces of `side` that are pinned
+//     against their own king.
+//   - `pinRays[sq]` (for each pinned square `sq`): the set of squares on the
+//     ray from the king through the pinning slider, excluding the king
+//     square itself. A pinned piece on `sq` may move only to squares in
+//     `pinRays[sq]`.
+//
+// The snapshot is taken once at SEE entry and is not updated as the swap
+// progresses. Returns zero values if `side` has no king on the board.
+func (g *Game) seeComputePins(side Color) (Bitboard, [64]Bitboard) {
+	var pinned Bitboard
+	var pinRays [64]Bitboard
+
+	var ourKing Bitboard
+	var ourPieces Bitboard
+	var theirRookQueen, theirBishopQueen Bitboard
+	if side == WHITE {
+		ourKing = g.Whites[KING]
+		ourPieces = g.WhitePieces
+		theirRookQueen = g.Blacks[ROOK] | g.Blacks[QUEEN]
+		theirBishopQueen = g.Blacks[BISHOP] | g.Blacks[QUEEN]
+	} else {
+		ourKing = g.Blacks[KING]
+		ourPieces = g.BlackPieces
+		theirRookQueen = g.Whites[ROOK] | g.Whites[QUEEN]
+		theirBishopQueen = g.Whites[BISHOP] | g.Whites[QUEEN]
+	}
+	if ourKing == 0 {
+		return pinned, pinRays
+	}
+	kingSq := Square(ourKing.lsbIndex())
+
+	scan := func(directions []Direction, sliders Bitboard) {
+		for _, dir := range directions {
+			ray := RAY_MASKS[dir][kingSq]
+			if ray&sliders == 0 {
+				continue
+			}
+			firstSq, ok := nearestRayBlocker(kingSq, dir, g.Occupied)
+			if !ok {
+				continue
+			}
+			firstBB := Bitboard(1) << uint(firstSq)
+			if firstBB&ourPieces == 0 {
+				continue
+			}
+			secondSq, ok := nearestRayBlocker(firstSq, dir, g.Occupied)
+			if !ok {
+				continue
+			}
+			secondBB := Bitboard(1) << uint(secondSq)
+			if secondBB&sliders == 0 {
+				continue
+			}
+			pinned |= firstBB
+			pinRays[firstSq] = ray ^ RAY_MASKS[dir][secondSq]
+		}
+	}
+
+	scan(ROOK_DIRECTIONS[:], theirRookQueen)
+	scan(BISHOP_DIRECTIONS[:], theirBishopQueen)
+
+	return pinned, pinRays
+}
