@@ -46,7 +46,67 @@ func (g *Game) SEE(from, to Square) int {
 	if g.Squares[from] == EMPTY {
 		return 0
 	}
-	return 0 // TODO: implement in later tasks
+
+	mover := g.Squares[from]
+	moverColor := mover.Color()
+	moverKind := mover.Kind()
+
+	fromBB := Bitboard(1) << uint(from)
+
+	capturedValue := seePieceValue[g.Squares[to].Kind()]
+	moverValueOnTo := seePieceValue[moverKind]
+
+	occ := g.Occupied &^ fromBB
+
+	whitePinned, whitePinRays := g.seeComputePins(WHITE)
+	blackPinned, blackPinRays := g.seeComputePins(BLACK)
+
+	var gain [32]int
+	gain[0] = capturedValue
+	d := 0
+	pieceOnTo := moverValueOnTo
+	side := seeOpponent(moverColor)
+
+	for {
+		var pinned Bitboard
+		var pinRays *[64]Bitboard
+		if side == WHITE {
+			pinned = whitePinned
+			pinRays = &whitePinRays
+		} else {
+			pinned = blackPinned
+			pinRays = &blackPinRays
+		}
+		attackerSq, attackerKind, ok := g.seeLeastValuableAttacker(to, side, occ, pinned, pinRays)
+		if !ok {
+			break
+		}
+
+		d++
+		gain[d] = pieceOnTo - gain[d-1]
+		nextValue := seePieceValue[attackerKind]
+
+		occ &^= Bitboard(1) << uint(attackerSq)
+
+		if attackerKind == KING {
+			break
+		}
+
+		pieceOnTo = nextValue
+		side = seeOpponent(side)
+
+		if d >= len(gain)-1 {
+			break
+		}
+	}
+
+	for d > 0 {
+		if -gain[d] < gain[d-1] {
+			gain[d-1] = -gain[d]
+		}
+		d--
+	}
+	return gain[0]
 }
 
 // seeComputePins returns the absolute-pin snapshot for `side`:
@@ -186,4 +246,11 @@ func seePickFiltered(candidates Bitboard, to Square, pinned Bitboard, pinRays *[
 		}
 	}
 	return 0, false
+}
+
+func seeOpponent(c Color) Color {
+	if c == WHITE {
+		return BLACK
+	}
+	return WHITE
 }
