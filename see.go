@@ -115,3 +115,75 @@ func (g *Game) seeComputePins(side Color) (Bitboard, [64]Bitboard) {
 
 	return pinned, pinRays
 }
+
+// seeLeastValuableAttacker returns the lowest-valued piece of `side` that
+// attacks `to`, given the current working occupancy `occ` and a pin
+// snapshot for `side`. Returns the attacker square, its piece kind, and
+// true; or zero values and false if no legal attacker exists.
+//
+// Scans in fixed order PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING and returns
+// as soon as the first non-empty (post-pin-filter) candidate set is found.
+// Sliding attackers are computed against `occ` using the package's
+// magic-bitboard helpers, which is what produces correct x-ray reveals as
+// captured pieces are removed from `occ`.
+func (g *Game) seeLeastValuableAttacker(
+	to Square, side Color, occ Bitboard,
+	pinned Bitboard, pinRays *[64]Bitboard,
+) (Square, Piece, bool) {
+	var pieces *[7]Bitboard
+	if side == WHITE {
+		pieces = &g.Whites
+	} else {
+		pieces = &g.Blacks
+	}
+
+	pawnAtts := pawnAttackersTo(to, side, pieces[PAWN]) & occ
+	if sq, ok := seePickFiltered(pawnAtts, to, pinned, pinRays); ok {
+		return sq, PAWN, true
+	}
+
+	knightAtts := KNIGHT_ATTACKS_FROM[to] & pieces[KNIGHT] & occ
+	if sq, ok := seePickFiltered(knightAtts, to, pinned, pinRays); ok {
+		return sq, KNIGHT, true
+	}
+
+	bishopAtts := bishopAttacks(to, occ) & pieces[BISHOP] & occ
+	if sq, ok := seePickFiltered(bishopAtts, to, pinned, pinRays); ok {
+		return sq, BISHOP, true
+	}
+
+	rookAtts := rookAttacks(to, occ) & pieces[ROOK] & occ
+	if sq, ok := seePickFiltered(rookAtts, to, pinned, pinRays); ok {
+		return sq, ROOK, true
+	}
+
+	queenAtts := (rookAttacks(to, occ) | bishopAttacks(to, occ)) & pieces[QUEEN] & occ
+	if sq, ok := seePickFiltered(queenAtts, to, pinned, pinRays); ok {
+		return sq, QUEEN, true
+	}
+
+	kingAtts := KING_ATTACKS_FROM[to] & pieces[KING] & occ
+	if kingAtts != 0 {
+		return Square(kingAtts.lsbIndex()), KING, true
+	}
+
+	return 0, EMPTY, false
+}
+
+// seePickFiltered iterates the candidate attacker squares and returns the
+// first one that is either not pinned, or pinned along a ray that contains
+// `to` (in which case the pinned piece may legally move onto `to`).
+func seePickFiltered(candidates Bitboard, to Square, pinned Bitboard, pinRays *[64]Bitboard) (Square, bool) {
+	toBB := Bitboard(1) << uint(to)
+	for candidates != 0 {
+		sq := Square(candidates.popLSB())
+		bb := Bitboard(1) << uint(sq)
+		if pinned&bb == 0 {
+			return sq, true
+		}
+		if pinRays[sq]&toBB != 0 {
+			return sq, true
+		}
+	}
+	return 0, false
+}
