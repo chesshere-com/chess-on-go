@@ -4,10 +4,10 @@ package chessongo
 func (g *Game) ComputeIsCheck() bool {
 	var kingBB, theirsAll, attackers Bitboard
 	var theirs []Bitboard
-	if g.Turn == WHITE {
-		kingBB, theirs, theirsAll = g.Whites[KING], g.Blacks[:], g.BlackPieces
+	if g.turn == WHITE {
+		kingBB, theirs, theirsAll = g.whites[KING], g.blacks[:], g.blackPieces
 	} else {
-		kingBB, theirs, theirsAll = g.Blacks[KING], g.Whites[:], g.WhitePieces
+		kingBB, theirs, theirsAll = g.blacks[KING], g.whites[:], g.whitePieces
 	}
 	if kingBB == 0 {
 		return false
@@ -16,12 +16,12 @@ func (g *Game) ComputeIsCheck() bool {
 	possibleAttackers := theirsAll & ATTACKS_TO[kingIdx]
 
 	attackers = (theirs[ROOK] | theirs[QUEEN]) & possibleAttackers
-	if attackers > 0 && rookAttacks(Square(kingIdx), g.Occupied)&attackers > 0 {
+	if attackers > 0 && rookAttacks(Square(kingIdx), g.occupied)&attackers > 0 {
 		return true
 	}
 
 	attackers = (theirs[BISHOP] | theirs[QUEEN]) & possibleAttackers
-	if attackers > 0 && bishopAttacks(Square(kingIdx), g.Occupied)&attackers > 0 {
+	if attackers > 0 && bishopAttacks(Square(kingIdx), g.occupied)&attackers > 0 {
 		return true
 	}
 
@@ -33,16 +33,16 @@ func (g *Game) ComputeIsCheck() bool {
 		}
 	}
 
-	if g.Turn == WHITE {
+	if g.turn == WHITE {
 		// Black pawns attack “down” the board (towards higher square indices).
-		if ((g.Blacks[PAWN]&^Bitboard(FILE_A_MASK))<<7)&kingBB > 0 ||
-			((g.Blacks[PAWN]&^Bitboard(FILE_H_MASK))<<9)&kingBB > 0 {
+		if ((g.blacks[PAWN]&^Bitboard(FILE_A_MASK))<<7)&kingBB > 0 ||
+			((g.blacks[PAWN]&^Bitboard(FILE_H_MASK))<<9)&kingBB > 0 {
 			return true
 		}
 	} else {
 		// White pawns attack “up” the board (towards lower square indices).
-		if ((g.Whites[PAWN]&^Bitboard(FILE_H_MASK))>>7)&kingBB > 0 ||
-			((g.Whites[PAWN]&^Bitboard(FILE_A_MASK))>>9)&kingBB > 0 {
+		if ((g.whites[PAWN]&^Bitboard(FILE_H_MASK))>>7)&kingBB > 0 ||
+			((g.whites[PAWN]&^Bitboard(FILE_A_MASK))>>9)&kingBB > 0 {
 			return true
 		}
 	}
@@ -67,7 +67,7 @@ func (g *Game) CanMove(m Move) bool {
 			inBetweenSq = m.From() - 1
 		}
 		inBetweenMove := NewMove(m.From(), inBetweenSq, EMPTY)
-		if g.IsCheck || g.WillMoveCauseCheck(inBetweenMove) {
+		if g.isCheck || g.WillMoveCauseCheck(inBetweenMove) {
 			return false
 		}
 	}
@@ -84,8 +84,8 @@ func (g *Game) WillMoveCauseCheck(m Move) bool {
 
 // LegalMovesList returns a copy of the currently legal moves.
 func (g *Game) LegalMovesList() []Move {
-	moves := make([]Move, len(g.LegalMoves))
-	copy(moves, g.LegalMoves)
+	moves := make([]Move, len(g.legalMoves))
+	copy(moves, g.legalMoves)
 	return moves
 }
 
@@ -94,19 +94,19 @@ func (g *Game) LegalMovesList() []Move {
 // It lets search code reuse a caller-owned buffer instead of allocating a fresh
 // slice at each node.
 func (g *Game) CopyLegalMoves(dst []Move) []Move {
-	if cap(dst) < len(g.LegalMoves) {
-		dst = make([]Move, len(g.LegalMoves))
+	if cap(dst) < len(g.legalMoves) {
+		dst = make([]Move, len(g.legalMoves))
 	} else {
-		dst = dst[:len(g.LegalMoves)]
+		dst = dst[:len(g.legalMoves)]
 	}
-	copy(dst, g.LegalMoves)
+	copy(dst, g.legalMoves)
 	return dst
 }
 
 // TryMove applies a move only if it matches one of the current legal moves.
 func (g *Game) TryMove(m Move) error {
 	g.GenerateLegalMoves()
-	for _, legal := range g.LegalMoves {
+	for _, legal := range g.legalMoves {
 		if moveMatchesRequest(legal, m) {
 			g.MakeMove(legal)
 			return nil
@@ -167,82 +167,82 @@ func (g *Game) makeMoveNoGenerate(m Move) {
 
 func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMoves bool) {
 	// Capture state for UndoMove
-	capturedPiece := g.Squares[m.To()]
+	capturedPiece := g.squares[m.To()]
 	if m.IsEnPassant() {
-		if g.Turn == WHITE {
-			capturedPiece = g.Squares[m.To()+8]
+		if g.turn == WHITE {
+			capturedPiece = g.squares[m.To()+8]
 		} else {
-			capturedPiece = g.Squares[m.To()-8]
+			capturedPiece = g.squares[m.To()-8]
 		}
 	}
-	g.History = append(g.History, GameState{
+	g.history = append(g.history, GameState{
 		CapturedPiece: capturedPiece,
-		Castling:      g.Castling,
-		EnPassant:     g.EnPassant,
-		HalfMoves:     g.HalfMoves,
-		FullMoves:     g.FullMoves,
-		ZobristHash:   g.ZobristHash,
+		Castling:      g.castling,
+		EnPassant:     g.enPassant,
+		HalfMoves:     g.halfMoves,
+		FullMoves:     g.fullMoves,
+		ZobristHash:   g.zobristHash,
 	})
 
 	if g.ShouldResetHalfMoves(m) {
-		g.HalfMoves = 0
+		g.halfMoves = 0
 	} else {
-		g.HalfMoves++
+		g.halfMoves++
 	}
 
 	if g.ShouldIncFullMoves(m) {
-		g.FullMoves++
+		g.fullMoves++
 	}
 
 	g.justMove(m)
-	kind := g.Squares[m.To()].Kind()
+	kind := g.squares[m.To()].Kind()
 	if kind == KING {
-		if g.Turn == WHITE {
-			g.Castling &= ^(CASTLE_WKS | CASTLE_WQS)
+		if g.turn == WHITE {
+			g.castling &= ^(CASTLE_WKS | CASTLE_WQS)
 		} else {
-			g.Castling &= ^(CASTLE_BKS | CASTLE_BQS)
+			g.castling &= ^(CASTLE_BKS | CASTLE_BQS)
 		}
 	}
 	if kind == ROOK {
 		switch m.From() {
 		case WKS_ROOK_ORIGINAL_SQUARE:
-			g.Castling &= ^CASTLE_WKS
+			g.castling &= ^CASTLE_WKS
 		case WQS_ROOK_ORIGINAL_SQUARE:
-			g.Castling &= ^CASTLE_WQS
+			g.castling &= ^CASTLE_WQS
 		case BKS_ROOK_ORIGINAL_SQUARE:
-			g.Castling &= ^CASTLE_BKS
+			g.castling &= ^CASTLE_BKS
 		case BQS_ROOK_ORIGINAL_SQUARE:
-			g.Castling &= ^CASTLE_BQS
+			g.castling &= ^CASTLE_BQS
 		}
 	}
 
 	switch m.To() {
 	case WKS_ROOK_ORIGINAL_SQUARE:
-		g.Castling &= ^CASTLE_WKS
+		g.castling &= ^CASTLE_WKS
 	case WQS_ROOK_ORIGINAL_SQUARE:
-		g.Castling &= ^CASTLE_WQS
+		g.castling &= ^CASTLE_WQS
 	case BKS_ROOK_ORIGINAL_SQUARE:
-		g.Castling &= ^CASTLE_BKS
+		g.castling &= ^CASTLE_BKS
 	case BQS_ROOK_ORIGINAL_SQUARE:
-		g.Castling &= ^CASTLE_BQS
+		g.castling &= ^CASTLE_BQS
 	}
 	// enPassant target
-	g.EnPassant = 0
-	if kind == PAWN && g.Turn == WHITE {
+	g.enPassant = 0
+	if kind == PAWN && g.turn == WHITE {
 		if m.From().Rank() == 6 && m.To().Rank() == 4 {
-			g.EnPassant = m.From() - 8
+			g.enPassant = m.From() - 8
 		}
 	}
-	if kind == PAWN && g.Turn == BLACK {
+	if kind == PAWN && g.turn == BLACK {
 		if m.From().Rank() == 1 && m.To().Rank() == 3 {
-			g.EnPassant = m.From() + 8
+			g.enPassant = m.From() + 8
 		}
 	}
 
-	if g.Turn == WHITE {
-		g.Turn = BLACK
+	if g.turn == WHITE {
+		g.turn = BLACK
 	} else {
-		g.Turn = WHITE
+		g.turn = WHITE
 	}
 
 	if updatePositionHistory {
@@ -262,52 +262,52 @@ func (g *Game) justMove(m Move) {
 	to := m.To()
 
 	//capturedPiece := m.captured()
-	capturedPiece := g.Squares[to]
-	if m.IsEnPassant() && g.Turn == WHITE {
-		capturedPiece = g.Squares[to+8]
-	} else if m.IsEnPassant() && g.Turn == BLACK {
-		capturedPiece = g.Squares[to-8]
+	capturedPiece := g.squares[to]
+	if m.IsEnPassant() && g.turn == WHITE {
+		capturedPiece = g.squares[to+8]
+	} else if m.IsEnPassant() && g.turn == BLACK {
+		capturedPiece = g.squares[to-8]
 	}
 	fromBBNeg := ^Bitboard(0x1 << from)
 	toBB := Bitboard(0x1 << to)
-	movingPiece := g.Squares[from]
+	movingPiece := g.squares[from]
 	movingPieceKind := movingPiece.Kind()
 	switch movingPiece.Color() {
 	case WHITE:
 		// update bitmap of moving piece kind, unset bit of source square
-		g.Whites[movingPieceKind] &= fromBBNeg
+		g.whites[movingPieceKind] &= fromBBNeg
 		// update bitmap of moving piece kind, set bit of source square
-		g.Whites[movingPieceKind] |= toBB
+		g.whites[movingPieceKind] |= toBB
 		// update white pieces bitboard - unset old square
-		g.WhitePieces &= fromBBNeg
+		g.whitePieces &= fromBBNeg
 		// update white pieces bitboard - set new square
-		g.WhitePieces |= toBB
+		g.whitePieces |= toBB
 	case BLACK:
-		g.Blacks[movingPieceKind] &= fromBBNeg
-		g.Blacks[movingPieceKind] |= toBB
-		g.BlackPieces &= fromBBNeg
-		g.BlackPieces |= toBB
+		g.blacks[movingPieceKind] &= fromBBNeg
+		g.blacks[movingPieceKind] |= toBB
+		g.blackPieces &= fromBBNeg
+		g.blackPieces |= toBB
 	}
 
-	g.Occupied &= fromBBNeg
-	g.Occupied |= toBB
+	g.occupied &= fromBBNeg
+	g.occupied |= toBB
 
-	g.Squares[m.To()] = g.Squares[m.From()]
-	g.Squares[m.From()] = EMPTY
+	g.squares[m.To()] = g.squares[m.From()]
+	g.squares[m.From()] = EMPTY
 	if capturedPiece != EMPTY {
 		if !m.IsEnPassant() {
 			g.capturePiece(to, capturedPiece)
 		} else {
-			if g.Turn == WHITE {
+			if g.turn == WHITE {
 				capSq := to + 8
-				g.capturePiece(capSq, g.Squares[capSq])
-				g.Occupied &= ^Bitboard(0x1 << capSq)
-				g.Squares[to+8] = EMPTY
+				g.capturePiece(capSq, g.squares[capSq])
+				g.occupied &= ^Bitboard(0x1 << capSq)
+				g.squares[to+8] = EMPTY
 			} else {
 				capSq := to - 8
-				g.capturePiece(capSq, g.Squares[capSq])
-				g.Occupied &= ^Bitboard(0x1 << capSq)
-				g.Squares[to-8] = EMPTY
+				g.capturePiece(capSq, g.squares[capSq])
+				g.occupied &= ^Bitboard(0x1 << capSq)
+				g.squares[to-8] = EMPTY
 			}
 		}
 	}
@@ -322,21 +322,21 @@ func (g *Game) justMove(m Move) {
 	}
 	var promoteTo Piece = m.GetPromotionTo()
 	if promoteTo > 0 {
-		switch g.Squares[to].Color() {
+		switch g.squares[to].Color() {
 		case WHITE:
 			// remove advanced pawn from boards
-			g.Whites[PAWN] &= ^toBB
+			g.whites[PAWN] &= ^toBB
 			// add promotePiece to board
-			g.Whites[promoteTo] |= toBB
-			g.WhitePieces |= toBB
+			g.whites[promoteTo] |= toBB
+			g.whitePieces |= toBB
 		case BLACK:
 			// remove advanced pawn from boards
-			g.Blacks[PAWN] &= ^toBB
+			g.blacks[PAWN] &= ^toBB
 			// add promotePiece to board
-			g.Blacks[promoteTo] |= toBB
-			g.BlackPieces |= toBB
+			g.blacks[promoteTo] |= toBB
+			g.blackPieces |= toBB
 		}
-		g.Squares[m.To()] = Piece(uint(promoteTo) | uint(g.Turn))
+		g.squares[m.To()] = Piece(uint(promoteTo) | uint(g.turn))
 	}
 }
 
@@ -349,11 +349,11 @@ func (g *Game) capturePiece(sq Square, captured Piece) {
 	kind := captured.Kind()
 	switch captured.Color() {
 	case WHITE:
-		g.Whites[kind] &= ^sqBB
-		g.WhitePieces &= ^sqBB
+		g.whites[kind] &= ^sqBB
+		g.whitePieces &= ^sqBB
 	case BLACK:
-		g.Blacks[kind] &= ^sqBB
-		g.BlackPieces &= ^sqBB
+		g.blacks[kind] &= ^sqBB
+		g.blackPieces &= ^sqBB
 	}
 }
 
@@ -361,8 +361,8 @@ func (g *Game) unmakeMove(m Move, captured Piece) {
 	from := m.From()
 	to := m.To()
 
-	movingPieceKind := g.Squares[to].Kind()
-	movingColor := g.Turn
+	movingPieceKind := g.squares[to].Kind()
+	movingColor := g.turn
 
 	if m.IsPromotionMove() {
 		// The piece at `to` is the promoted piece.
@@ -372,43 +372,43 @@ func (g *Game) unmakeMove(m Move, captured Piece) {
 		fromBB := Bitboard(0x1 << from)
 
 		if movingColor == WHITE {
-			g.Whites[promotedKind] &= ^toBB
-			g.WhitePieces &= ^toBB
+			g.whites[promotedKind] &= ^toBB
+			g.whitePieces &= ^toBB
 			// Restore Pawn at `from`
-			g.Whites[PAWN] |= fromBB
-			g.WhitePieces |= fromBB
+			g.whites[PAWN] |= fromBB
+			g.whitePieces |= fromBB
 		} else {
-			g.Blacks[promotedKind] &= ^toBB
-			g.BlackPieces &= ^toBB
-			g.Blacks[PAWN] |= fromBB
-			g.BlackPieces |= fromBB
+			g.blacks[promotedKind] &= ^toBB
+			g.blackPieces &= ^toBB
+			g.blacks[PAWN] |= fromBB
+			g.blackPieces |= fromBB
 		}
-		g.Squares[to] = EMPTY
-		g.Squares[from] = Piece(uint(PAWN) | uint(movingColor))
-		g.Occupied &= ^toBB
-		g.Occupied |= fromBB
+		g.squares[to] = EMPTY
+		g.squares[from] = Piece(uint(PAWN) | uint(movingColor))
+		g.occupied &= ^toBB
+		g.occupied |= fromBB
 
 	} else {
 		toBB := Bitboard(0x1 << to)
 		fromBB := Bitboard(0x1 << from)
 
 		if movingColor == WHITE {
-			g.Whites[movingPieceKind] &= ^toBB
-			g.Whites[movingPieceKind] |= fromBB
-			g.WhitePieces &= ^toBB
-			g.WhitePieces |= fromBB
+			g.whites[movingPieceKind] &= ^toBB
+			g.whites[movingPieceKind] |= fromBB
+			g.whitePieces &= ^toBB
+			g.whitePieces |= fromBB
 		} else {
-			g.Blacks[movingPieceKind] &= ^toBB
-			g.Blacks[movingPieceKind] |= fromBB
-			g.BlackPieces &= ^toBB
-			g.BlackPieces |= fromBB
+			g.blacks[movingPieceKind] &= ^toBB
+			g.blacks[movingPieceKind] |= fromBB
+			g.blackPieces &= ^toBB
+			g.blackPieces |= fromBB
 		}
 
-		g.Occupied &= ^toBB
-		g.Occupied |= fromBB
+		g.occupied &= ^toBB
+		g.occupied |= fromBB
 
-		g.Squares[from] = g.Squares[to]
-		g.Squares[to] = EMPTY
+		g.squares[from] = g.squares[to]
+		g.squares[to] = EMPTY
 	}
 
 	if captured != EMPTY {
@@ -447,20 +447,20 @@ func (g *Game) unmakeMove(m Move, captured Piece) {
 		rToBB := Bitboard(0x1 << rookTo)
 
 		if movingColor == WHITE {
-			g.Whites[ROOK] &= ^rFromBB
-			g.Whites[ROOK] |= rToBB
-			g.WhitePieces &= ^rFromBB
-			g.WhitePieces |= rToBB
+			g.whites[ROOK] &= ^rFromBB
+			g.whites[ROOK] |= rToBB
+			g.whitePieces &= ^rFromBB
+			g.whitePieces |= rToBB
 		} else {
-			g.Blacks[ROOK] &= ^rFromBB
-			g.Blacks[ROOK] |= rToBB
-			g.BlackPieces &= ^rFromBB
-			g.BlackPieces |= rToBB
+			g.blacks[ROOK] &= ^rFromBB
+			g.blacks[ROOK] |= rToBB
+			g.blackPieces &= ^rFromBB
+			g.blackPieces |= rToBB
 		}
-		g.Occupied &= ^rFromBB
-		g.Occupied |= rToBB
+		g.occupied &= ^rFromBB
+		g.occupied |= rToBB
 
-		g.Squares[rookTo] = g.Squares[rookFrom]
-		g.Squares[rookFrom] = EMPTY
+		g.squares[rookTo] = g.squares[rookFrom]
+		g.squares[rookFrom] = EMPTY
 	}
 }

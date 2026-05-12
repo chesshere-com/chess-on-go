@@ -23,59 +23,32 @@ const (
 )
 
 type Game struct {
-	// Deprecated: use FEN, ToFEN, or Snapshot. This field is not kept current after moves.
-	Fen string
-	// Deprecated: use Pieces(WHITE), BoardView, or Snapshot.
-	WhitePieces Bitboard
-	// Deprecated: use Pieces(BLACK), BoardView, or Snapshot.
-	BlackPieces Bitboard
+	whitePieces Bitboard
+	blackPieces Bitboard
 	// _, pawns, knights, bishops, rooks, queens, king
-	// Deprecated: use PiecesOfKind(WHITE, kind), BoardView, or Snapshot.
-	Whites [7]Bitboard
-	// Deprecated: use PiecesOfKind(BLACK, kind), BoardView, or Snapshot.
-	Blacks [7]Bitboard
-	// Deprecated: use OccupiedSquares, BoardView, or Snapshot.
-	Occupied Bitboard
-	// Deprecated: use PieceAt, BoardView, Board, or Snapshot.
-	Squares [64]Piece
-	// Deprecated: use EnPassantSquare or Snapshot.
-	EnPassant Square
-	// Deprecated: use CastlingRights or Snapshot.
-	Castling int
-	// Deprecated: retained for compatibility; prefer FullMoveNumber and HalfMoveClock.
-	Ply int
-	// Deprecated: use HalfMoveClock or Snapshot.
-	HalfMoves int
-	// Deprecated: use FullMoveNumber or Snapshot.
-	FullMoves int
-	// Deprecated: use SideToMove or Snapshot.
-	Turn Color
-	// Deprecated: internal generation buffer; use LegalMovesList or LegalMovesInto.
-	PseudoMoves []Move
-	// Deprecated: use LegalMovesList, LegalMovesInto, or Snapshot.
-	LegalMoves []Move
-	// Deprecated: internal repetition state.
-	PositionHistory map[uint64]int
-	// Deprecated: use PositionKey or Snapshot.
-	ZobristHash uint64
-	// Deprecated: use Status or Snapshot.
-	IsCheck bool
-	// Deprecated: use Status or Snapshot.
-	IsCheckmate bool
-	// Deprecated: misspelled compatibility field; use IsStalemate, Status, or Snapshot.
-	IsStalement bool
-	// Deprecated: use DrawStatus, Status, or Snapshot.
-	IsMaterialDraw bool
-	// Deprecated: use CanClaimThreefoldRepetition, DrawStatus, Status, or Snapshot.
-	IsThreefoldRepetition bool
-	// Deprecated: use CanClaimFiftyMoveRule, DrawStatus, Status, or Snapshot.
-	IsFiftyMoveRule bool
-	// Deprecated: use IsSeventyFiveMoveRuleDraw, DrawStatus, Status, or Snapshot.
-	IsSeventyFiveMoveRule bool
-	// Deprecated: use IsTerminal or Snapshot.
-	IsFinished bool
-	// Deprecated: internal undo stack.
-	History []GameState
+	whites                [7]Bitboard
+	blacks                [7]Bitboard
+	occupied              Bitboard
+	squares               [64]Piece
+	enPassant             Square
+	castling              int
+	ply                   int
+	halfMoves             int
+	fullMoves             int
+	turn                  Color
+	pseudoMoves           []Move
+	legalMoves            []Move
+	positionHistory       map[uint64]int
+	zobristHash           uint64
+	isCheck               bool
+	isCheckmate           bool
+	isStalemate           bool
+	isMaterialDraw        bool
+	isThreefoldRepetition bool
+	isFiftyMoveRule       bool
+	isSeventyFiveMoveRule bool
+	isFinished            bool
+	history               []GameState
 
 	pgnTags          map[string]string
 	pgnMoves         []string
@@ -87,38 +60,37 @@ type Game struct {
 
 // IsStalemate reports whether the current side to move has no legal moves and is not in check.
 func (g *Game) IsStalemate() bool {
-	return g.IsStalement
+	return g.isStalemate
 }
 
 func (g *Game) Reset() {
-	g.Fen = ""
-	g.WhitePieces = 0
-	g.BlackPieces = 0
+	g.whitePieces = 0
+	g.blackPieces = 0
 	for _, kind := range [6]Piece{PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING} {
-		g.Whites[kind] = 0
-		g.Blacks[kind] = 0
+		g.whites[kind] = 0
+		g.blacks[kind] = 0
 	}
-	g.Occupied = 0
-	g.Squares = [64]Piece{}
-	g.EnPassant = 0
-	g.Castling = 0
-	g.Ply = 0
-	g.HalfMoves = 0
-	g.FullMoves = 0
-	g.Turn = WHITE
-	g.PseudoMoves = []Move{}
-	g.LegalMoves = []Move{}
-	g.PositionHistory = map[uint64]int{}
-	g.ZobristHash = 0
-	g.IsCheck = false
-	g.IsCheckmate = false
-	g.IsStalement = false
-	g.IsMaterialDraw = false
-	g.IsThreefoldRepetition = false
-	g.IsFiftyMoveRule = false
-	g.IsSeventyFiveMoveRule = false
-	g.IsFinished = false
-	g.History = []GameState{}
+	g.occupied = 0
+	g.squares = [64]Piece{}
+	g.enPassant = 0
+	g.castling = 0
+	g.ply = 0
+	g.halfMoves = 0
+	g.fullMoves = 0
+	g.turn = WHITE
+	g.pseudoMoves = []Move{}
+	g.legalMoves = []Move{}
+	g.positionHistory = map[uint64]int{}
+	g.zobristHash = 0
+	g.isCheck = false
+	g.isCheckmate = false
+	g.isStalemate = false
+	g.isMaterialDraw = false
+	g.isThreefoldRepetition = false
+	g.isFiftyMoveRule = false
+	g.isSeventyFiveMoveRule = false
+	g.isFinished = false
+	g.history = []GameState{}
 	g.pgnTags = nil
 	g.pgnMoves = nil
 	g.pgnResult = ""
@@ -136,32 +108,31 @@ func NewGame() *Game {
 
 func CloneGame(g *Game) Game {
 	clone := Game{
-		Fen:                   g.Fen,
-		WhitePieces:           g.WhitePieces,
-		BlackPieces:           g.BlackPieces,
-		Whites:                [7]Bitboard{},
-		Blacks:                [7]Bitboard{},
-		Squares:               [64]Piece{},
-		Occupied:              g.Occupied,
-		EnPassant:             g.EnPassant,
-		Castling:              g.Castling,
-		Ply:                   g.Ply,
-		HalfMoves:             g.HalfMoves,
-		FullMoves:             g.FullMoves,
-		Turn:                  g.Turn,
-		PseudoMoves:           []Move{},
-		LegalMoves:            []Move{},
-		PositionHistory:       map[uint64]int{},
-		ZobristHash:           g.ZobristHash,
-		IsCheck:               g.IsCheck,
-		IsCheckmate:           g.IsCheckmate,
-		IsStalement:           g.IsStalement,
-		IsMaterialDraw:        g.IsMaterialDraw,
-		IsThreefoldRepetition: g.IsThreefoldRepetition,
-		IsFiftyMoveRule:       g.IsFiftyMoveRule,
-		IsSeventyFiveMoveRule: g.IsSeventyFiveMoveRule,
-		IsFinished:            g.IsFinished,
-		History:               make([]GameState, len(g.History)),
+		whitePieces:           g.whitePieces,
+		blackPieces:           g.blackPieces,
+		whites:                [7]Bitboard{},
+		blacks:                [7]Bitboard{},
+		squares:               [64]Piece{},
+		occupied:              g.occupied,
+		enPassant:             g.enPassant,
+		castling:              g.castling,
+		ply:                   g.ply,
+		halfMoves:             g.halfMoves,
+		fullMoves:             g.fullMoves,
+		turn:                  g.turn,
+		pseudoMoves:           []Move{},
+		legalMoves:            []Move{},
+		positionHistory:       map[uint64]int{},
+		zobristHash:           g.zobristHash,
+		isCheck:               g.isCheck,
+		isCheckmate:           g.isCheckmate,
+		isStalemate:           g.isStalemate,
+		isMaterialDraw:        g.isMaterialDraw,
+		isThreefoldRepetition: g.isThreefoldRepetition,
+		isFiftyMoveRule:       g.isFiftyMoveRule,
+		isSeventyFiveMoveRule: g.isSeventyFiveMoveRule,
+		isFinished:            g.isFinished,
+		history:               make([]GameState, len(g.history)),
 		pgnTags:               cloneStringMap(g.pgnTags),
 		pgnMoves:              append([]string(nil), g.pgnMoves...),
 		pgnResult:             g.pgnResult,
@@ -169,18 +140,18 @@ func CloneGame(g *Game) Game {
 		pgnStartFullMove:      g.pgnStartFullMove,
 		pgnStartFEN:           g.pgnStartFEN,
 	}
-	copy(clone.Whites[:], g.Whites[:])
-	copy(clone.Blacks[:], g.Blacks[:])
-	copy(clone.Squares[:], g.Squares[:])
-	copy(clone.History, g.History)
-	for k, v := range g.PositionHistory {
-		clone.PositionHistory[k] = v
+	copy(clone.whites[:], g.whites[:])
+	copy(clone.blacks[:], g.blacks[:])
+	copy(clone.squares[:], g.squares[:])
+	copy(clone.history, g.history)
+	for k, v := range g.positionHistory {
+		clone.positionHistory[k] = v
 	}
 	return clone
 }
 
 func (g *Game) addPiece(piece Piece, index int) {
-	g.Squares[index] = piece
+	g.squares[index] = piece
 	if piece == EMPTY {
 		return
 	}
@@ -188,39 +159,39 @@ func (g *Game) addPiece(piece Piece, index int) {
 	kind := piece.Kind()
 	switch piece.Color() {
 	case WHITE:
-		g.Whites[kind] |= bit
-		g.WhitePieces |= bit
+		g.whites[kind] |= bit
+		g.whitePieces |= bit
 	case BLACK:
-		g.Blacks[kind] |= bit
-		g.BlackPieces |= bit
+		g.blacks[kind] |= bit
+		g.blackPieces |= bit
 	}
-	g.Occupied |= bit
+	g.occupied |= bit
 }
 
 // Get our pawns and opponent's
 func (g *Game) GetPawns() (Bitboard, Bitboard) {
-	if g.Turn == WHITE {
-		return g.Whites[PAWN], g.Blacks[PAWN]
+	if g.turn == WHITE {
+		return g.whites[PAWN], g.blacks[PAWN]
 	}
-	return g.Blacks[PAWN], g.Whites[PAWN]
+	return g.blacks[PAWN], g.whites[PAWN]
 }
 
 // Get our color and opponent's
 func (g *Game) GetColors() (Color, Color) {
-	if g.Turn == WHITE {
+	if g.turn == WHITE {
 		return WHITE, BLACK
 	}
 	return BLACK, WHITE
 }
 
 func (g *Game) hasMoves() bool {
-	return len(g.LegalMoves) > 0
+	return len(g.legalMoves) > 0
 }
 
 func (g *Game) ShouldIncFullMoves(m Move) bool {
-	return g.Squares[m.From()].Color() == BLACK
+	return g.squares[m.From()].Color() == BLACK
 }
 
 func (g *Game) ShouldResetHalfMoves(m Move) bool {
-	return m.GetCapturedPiece() > 0 || g.Squares[m.From()].Kind() == PAWN
+	return m.GetCapturedPiece() > 0 || g.squares[m.From()].Kind() == PAWN
 }

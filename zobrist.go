@@ -67,21 +67,21 @@ func zobristPieceIndex(p Piece) int {
 func (g *Game) computeZobrist() uint64 {
 	ensureZobrist()
 	h := uint64(0)
-	for sq, piece := range g.Squares {
+	for sq, piece := range g.squares {
 		idx := zobristPieceIndex(piece)
 		if idx >= 0 {
 			h ^= zobristPiece[idx][sq]
 		}
 	}
 
-	h ^= zobristCastling[g.Castling&0xF]
+	h ^= zobristCastling[g.castling&0xF]
 
-	if g.EnPassant != 0 && g.hasLegalEnPassantCapture() {
-		file := g.EnPassant.File()
+	if g.enPassant != 0 && g.hasLegalEnPassantCapture() {
+		file := g.enPassant.File()
 		h ^= zobristEnPassant[file]
 	}
 
-	if g.Turn == BLACK {
+	if g.turn == BLACK {
 		h ^= zobristTurnToMove
 	}
 
@@ -89,31 +89,31 @@ func (g *Game) computeZobrist() uint64 {
 }
 
 func (g *Game) hasLegalEnPassantCapture() bool {
-	if g.EnPassant == 0 {
+	if g.enPassant == 0 {
 		return false
 	}
 
-	ep := g.EnPassant
-	if g.Turn == WHITE {
-		if ep.Rank() != 2 || ep+8 > 63 || g.Squares[ep+8] != B_PAWN {
+	ep := g.enPassant
+	if g.turn == WHITE {
+		if ep.Rank() != 2 || ep+8 > 63 || g.squares[ep+8] != B_PAWN {
 			return false
 		}
-		if ep.File() > 0 && ep+7 <= 63 && g.Squares[ep+7] == W_PAWN {
+		if ep.File() > 0 && ep+7 <= 63 && g.squares[ep+7] == W_PAWN {
 			return true
 		}
-		if ep.File() < 7 && ep+9 <= 63 && g.Squares[ep+9] == W_PAWN {
+		if ep.File() < 7 && ep+9 <= 63 && g.squares[ep+9] == W_PAWN {
 			return true
 		}
 		return false
 	}
 
-	if ep.Rank() != 5 || ep < 8 || g.Squares[ep-8] != W_PAWN {
+	if ep.Rank() != 5 || ep < 8 || g.squares[ep-8] != W_PAWN {
 		return false
 	}
-	if ep.File() < 7 && ep >= 7 && g.Squares[ep-7] == B_PAWN {
+	if ep.File() < 7 && ep >= 7 && g.squares[ep-7] == B_PAWN {
 		return true
 	}
-	if ep.File() > 0 && ep >= 9 && g.Squares[ep-9] == B_PAWN {
+	if ep.File() > 0 && ep >= 9 && g.squares[ep-9] == B_PAWN {
 		return true
 	}
 	return false

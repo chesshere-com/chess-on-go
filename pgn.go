@@ -25,8 +25,8 @@ func (g *Game) LoadPGN(pgn string) error {
 	}
 	loaded.pgnTags = cloneStringMap(tags)
 	loaded.pgnStartFEN = startFEN
-	loaded.pgnStartTurn = loaded.Turn
-	loaded.pgnStartFullMove = loaded.FullMoves
+	loaded.pgnStartTurn = loaded.turn
+	loaded.pgnStartFullMove = loaded.fullMoves
 
 	fastPath := !strings.ContainsAny(pgn, "[{(;")
 
@@ -61,7 +61,7 @@ func (g *Game) LoadPGN(pgn string) error {
 
 		// b.GenerateLegalMoves() is already done by LoadFEN (initially) and MakeMove (subsequently).
 		matched := false
-		for _, mv := range loaded.LegalMoves {
+		for _, mv := range loaded.legalMoves {
 			if target != -1 && int(mv.To()) != target {
 				continue
 			}
@@ -148,8 +148,8 @@ func (g *Game) PGN() string {
 
 func (g *Game) recordPGNMove(m Move) {
 	if g.pgnStartFullMove == 0 {
-		g.pgnStartTurn = g.Turn
-		g.pgnStartFullMove = g.FullMoves
+		g.pgnStartTurn = g.turn
+		g.pgnStartFullMove = g.fullMoves
 		g.pgnStartFEN = g.FEN()
 	}
 	g.pgnMoves = append(g.pgnMoves, g.GetMoveSan(m))

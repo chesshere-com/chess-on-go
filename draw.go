@@ -1,32 +1,32 @@
 package chessongo
 
 func (g *Game) hasInsufficientMaterial() bool {
-	if g.Whites[QUEEN] > 0 || g.Whites[ROOK] > 0 || g.Whites[PAWN] > 0 {
+	if g.whites[QUEEN] > 0 || g.whites[ROOK] > 0 || g.whites[PAWN] > 0 {
 		return false
 	}
-	if g.Blacks[QUEEN] > 0 || g.Blacks[ROOK] > 0 || g.Blacks[PAWN] > 0 {
+	if g.blacks[QUEEN] > 0 || g.blacks[ROOK] > 0 || g.blacks[PAWN] > 0 {
 		return false
 	}
-	if g.Whites[KNIGHT] > 0 && g.Whites[BISHOP] > 0 {
+	if g.whites[KNIGHT] > 0 && g.whites[BISHOP] > 0 {
 		return false
 	}
-	if g.Blacks[KNIGHT] > 0 && g.Blacks[BISHOP] > 0 {
-		return false
-	}
-
-	if (g.Whites[BISHOP] > 0 || g.Blacks[BISHOP] > 0) && (g.Whites[KNIGHT] > 0 || g.Blacks[KNIGHT] > 0) {
+	if g.blacks[KNIGHT] > 0 && g.blacks[BISHOP] > 0 {
 		return false
 	}
 
-	if g.Whites[BISHOP] > 0 || g.Blacks[BISHOP] > 0 {
-		return allBishopsOnSameColor(g.Whites[BISHOP] | g.Blacks[BISHOP])
-	}
-
-	if g.Whites[KNIGHT].NumberOfSetBits() > 1 {
+	if (g.whites[BISHOP] > 0 || g.blacks[BISHOP] > 0) && (g.whites[KNIGHT] > 0 || g.blacks[KNIGHT] > 0) {
 		return false
 	}
 
-	if g.Blacks[KNIGHT].NumberOfSetBits() > 1 {
+	if g.whites[BISHOP] > 0 || g.blacks[BISHOP] > 0 {
+		return allBishopsOnSameColor(g.whites[BISHOP] | g.blacks[BISHOP])
+	}
+
+	if g.whites[KNIGHT].NumberOfSetBits() > 1 {
+		return false
+	}
+
+	if g.blacks[KNIGHT].NumberOfSetBits() > 1 {
 		return false
 	}
 

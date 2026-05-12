@@ -44,7 +44,7 @@ func (g *Game) ParseMoveSAN(san string) (Move, error) {
 	}
 
 	g.GenerateLegalMoves()
-	for _, move := range g.LegalMoves {
+	for _, move := range g.legalMoves {
 		if normalizeSANInput(g.GetMoveSan(move)) == target || normalizeSANInput(g.GetMoveSanWithoutSuffix(move)) == target {
 			return move, nil
 		}

@@ -58,8 +58,8 @@ func TestLoadFENRefreshesLegalMovesAndStatus(t *testing.T) {
 	g := &Game{}
 	require.NoError(t, g.LoadFEN(STARTING_POSITION_FEN))
 
-	require.Len(t, g.LegalMoves, 20)
-	require.False(t, g.IsCheck)
-	require.False(t, g.IsCheckmate)
+	require.Len(t, g.legalMoves, 20)
+	require.False(t, g.isCheck)
+	require.False(t, g.isCheckmate)
 	require.False(t, g.IsStalemate())
 }

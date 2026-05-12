@@ -15,7 +15,7 @@ func TestLoadPGNStandardLine(t *testing.T) {
 	require.NoError(t, g.LoadPGN(pgn))
 	require.Equal(t, "r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4", g.ToFEN())
 	// History should have at least the number of plies + initial position.
-	require.GreaterOrEqual(t, g.PositionHistory[g.ZobristHash], 1)
+	require.GreaterOrEqual(t, g.positionHistory[g.zobristHash], 1)
 }
 
 func TestLoadPGNFixtureFiles(t *testing.T) {
@@ -213,9 +213,9 @@ func TestLoadPGNDetectsThreefold(t *testing.T) {
 
 	g := &Game{}
 	require.NoError(t, g.LoadPGN(pgn))
-	require.True(t, g.IsThreefoldRepetition)
+	require.True(t, g.isThreefoldRepetition)
 	require.False(t, g.IsFivefoldRepetition())
-	require.GreaterOrEqual(t, g.PositionHistory[g.ZobristHash], 3)
+	require.GreaterOrEqual(t, g.positionHistory[g.zobristHash], 3)
 }
 
 func TestLoadPGNGame(t *testing.T) {

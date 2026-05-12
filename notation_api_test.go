@@ -28,7 +28,7 @@ func TestTryMoveUCIPromotion(t *testing.T) {
 	require.NoError(t, err)
 
 	require.NoError(t, g.TryMoveUCI("a7a8q"))
-	require.Equal(t, Piece(W_QUEEN), g.Squares[COORDS_TO_SQUARE["a8"]])
+	require.Equal(t, Piece(W_QUEEN), g.squares[COORDS_TO_SQUARE["a8"]])
 }
 
 func TestTryMoveUCIRequiresPromotionSuffix(t *testing.T) {
@@ -54,13 +54,13 @@ func TestTryMoveSANCastlingAndSuffix(t *testing.T) {
 		require.NoError(t, g.TryMoveSAN(san))
 	}
 
-	require.Equal(t, Piece(W_KING), g.Squares[COORDS_TO_SQUARE["g1"]])
-	require.Equal(t, Piece(W_ROOK), g.Squares[COORDS_TO_SQUARE["f1"]])
+	require.Equal(t, Piece(W_KING), g.squares[COORDS_TO_SQUARE["g1"]])
+	require.Equal(t, Piece(W_ROOK), g.squares[COORDS_TO_SQUARE["f1"]])
 
 	check, err := NewGameFromFEN("6k1/8/8/8/8/8/8/5RK1 w - - 0 1")
 	require.NoError(t, err)
 	require.NoError(t, check.TryMoveSAN("Rf8+"))
-	require.True(t, check.IsCheck)
+	require.True(t, check.isCheck)
 }
 
 func TestTryMoveSANRejectsInvalidMoveAndPreservesPosition(t *testing.T) {
