@@ -144,3 +144,70 @@ func TestSEELVA_RespectsWorkingOccupancy(t *testing.T) {
 	require.Equal(t, e7, sq)
 	require.Equal(t, Piece(ROOK), kind)
 }
+
+type seeCase struct {
+	name     string
+	fen      string
+	from, to string
+	expected int
+}
+
+func runSEECases(t *testing.T, cases []seeCase) {
+	t.Helper()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := &Game{}
+			require.NoError(t, g.LoadFEN(tc.fen))
+			from, err := ParseSquare(tc.from)
+			require.NoError(t, err)
+			to, err := ParseSquare(tc.to)
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, g.SEE(from, to))
+		})
+	}
+}
+
+func TestSEE_BasicCaptures(t *testing.T) {
+	runSEECases(t, []seeCase{
+		{
+			name:     "rook×pawn no defender (spec #1)",
+			fen:      "1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 1",
+			from:     "e1", to: "e5", expected: 100,
+		},
+		{
+			name:     "multi-step swap (spec #2)",
+			fen:      "1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 1",
+			from:     "d3", to: "e5", expected: -220,
+		},
+		{
+			name:     "plain rook×pawn (spec #3)",
+			fen:      "4k3/8/8/4p3/8/8/4R3/4K3 w - - 0 1",
+			from:     "e2", to: "e5", expected: 100,
+		},
+		{
+			name:     "rook×pawn then rook recaptures (spec #4)",
+			fen:      "4k3/8/4r3/4p3/8/8/4R3/4K3 w - - 0 1",
+			from:     "e2", to: "e5", expected: -400,
+		},
+		{
+			name:     "honest x-ray reveal (spec #11)",
+			fen:      "4k3/4r3/8/4p3/8/8/4R3/4R2K w - - 0 1",
+			from:     "e2", to: "e5", expected: 100,
+		},
+		{
+			name:     "pinned attacker filtered out (spec #12a)",
+			fen:      "1k6/8/1n6/3p4/2P5/8/8/1R2K3 w - - 0 1",
+			from:     "c4", to: "d5", expected: 100,
+		},
+		{
+			name:     "pin-filter control (spec #12b)",
+			fen:      "7k/8/1n6/3p4/2P5/8/8/1R2K3 w - - 0 1",
+			from:     "c4", to: "d5", expected: 0,
+		},
+		{
+			name:     "king terminates swap (spec #13)",
+			fen:      "4k3/8/8/8/8/8/4p3/4K3 w - - 0 1",
+			from:     "e1", to: "e2", expected: 100,
+		},
+	})
+}
