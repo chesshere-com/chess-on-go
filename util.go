@@ -24,7 +24,7 @@ func PrintBitboard(bb Bitboard, title string) {
 
 func (g *Game) PrintBoard(title string) {
 	fmt.Printf("________________%s_______________________\n", title)
-	for i, v := range g.Squares {
+	for i, v := range g.squares {
 		if i%8 == 0 {
 			fmt.Println("")
 		}

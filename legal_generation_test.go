@@ -26,14 +26,14 @@ func TestGenerateLegalMovesFastMatchesSlowOracle(t *testing.T) {
 
 			g.GeneratePseudoMoves()
 			var slow []Move
-			for _, move := range g.PseudoMoves {
+			for _, move := range g.pseudoMoves {
 				if g.CanMove(move) {
 					slow = append(slow, move)
 				}
 			}
 
 			g.GenerateLegalMovesFast()
-			require.Equal(t, sortedMoveUCIs(slow), sortedMoveUCIs(g.LegalMoves))
+			require.Equal(t, sortedMoveUCIs(slow), sortedMoveUCIs(g.legalMoves))
 		})
 	}
 }
@@ -50,19 +50,19 @@ func TestGenerateLegalMovesIntoMatchesCurrentLegalMovesWithoutMutatingBuffers(t 
 		t.Run(fen, func(t *testing.T) {
 			g := &Game{}
 			require.NoError(t, g.LoadFEN(fen))
-			want := sortedMoveUCIs(g.LegalMoves)
-			g.PseudoMoves = []Move{NewMove(0, 1, EMPTY)}
-			g.LegalMoves = []Move{NewMove(1, 2, EMPTY)}
-			g.IsCheck = !g.IsCheck
-			wantIsCheck := g.IsCheck
+			want := sortedMoveUCIs(g.legalMoves)
+			g.pseudoMoves = []Move{NewMove(0, 1, EMPTY)}
+			g.legalMoves = []Move{NewMove(1, 2, EMPTY)}
+			g.isCheck = !g.isCheck
+			wantIsCheck := g.isCheck
 
 			buffer := make([]Move, 0, maxGeneratedMoves)
 			got := g.generateLegalMovesInto(buffer[:0])
 
 			require.Equal(t, want, sortedMoveUCIs(got))
-			require.Equal(t, []Move{NewMove(0, 1, EMPTY)}, g.PseudoMoves)
-			require.Equal(t, []Move{NewMove(1, 2, EMPTY)}, g.LegalMoves)
-			require.Equal(t, wantIsCheck, g.IsCheck)
+			require.Equal(t, []Move{NewMove(0, 1, EMPTY)}, g.pseudoMoves)
+			require.Equal(t, []Move{NewMove(1, 2, EMPTY)}, g.legalMoves)
+			require.Equal(t, wantIsCheck, g.isCheck)
 		})
 	}
 }
@@ -70,7 +70,7 @@ func TestGenerateLegalMovesIntoMatchesCurrentLegalMovesWithoutMutatingBuffers(t 
 func TestGenerateLegalMovesArrayMatchesCurrentLegalMoves(t *testing.T) {
 	g := &Game{}
 	require.NoError(t, g.LoadFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"))
-	want := sortedMoveUCIs(g.LegalMoves)
+	want := sortedMoveUCIs(g.legalMoves)
 
 	var moves [maxGeneratedMoves]Move
 	count := g.generateLegalMovesArray(&moves)

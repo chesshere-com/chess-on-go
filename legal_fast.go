@@ -40,14 +40,14 @@ func init() {
 
 // GenerateLegalMovesFast generates legal moves using check and pin masks.
 func (g *Game) GenerateLegalMovesFast() {
-	if cap(g.LegalMoves) < maxGeneratedMoves {
-		g.LegalMoves = make([]Move, 0, maxGeneratedMoves)
+	if cap(g.legalMoves) < maxGeneratedMoves {
+		g.legalMoves = make([]Move, 0, maxGeneratedMoves)
 	} else {
-		g.LegalMoves = g.LegalMoves[:0]
+		g.legalMoves = g.legalMoves[:0]
 	}
 	info := g.buildLegalMoveInfo()
-	g.IsCheck = info.checkerCount > 0
-	g.LegalMoves = g.generateLegalMovesIntoWithInfo(g.LegalMoves, &info)
+	g.isCheck = info.checkerCount > 0
+	g.legalMoves = g.generateLegalMovesIntoWithInfo(g.legalMoves, &info)
 }
 
 func (g *Game) generateLegalMovesInto(dst []Move) []Move {
@@ -64,14 +64,14 @@ func (g *Game) generateLegalMovesIntoWithInfo(dst []Move, info *legalMoveInfo) [
 
 	var ours *[7]Bitboard
 	var oursAll, theirsAll Bitboard
-	if g.Turn == WHITE {
-		ours = &g.Whites
-		oursAll = g.WhitePieces
-		theirsAll = g.BlackPieces
+	if g.turn == WHITE {
+		ours = &g.whites
+		oursAll = g.whitePieces
+		theirsAll = g.blackPieces
 	} else {
-		ours = &g.Blacks
-		oursAll = g.BlackPieces
-		theirsAll = g.WhitePieces
+		ours = &g.blacks
+		oursAll = g.blackPieces
+		theirsAll = g.whitePieces
 	}
 
 	dst = g.appendLegalKingMoves(dst, ours[KING], oursAll, theirsAll, info)
@@ -101,11 +101,11 @@ func (g *Game) buildLegalMoveInfo() legalMoveInfo {
 	info := legalMoveInfo{checkMask: ^Bitboard(0)}
 	var kingBB Bitboard
 	var opponent Color
-	if g.Turn == WHITE {
-		kingBB = g.Whites[KING]
+	if g.turn == WHITE {
+		kingBB = g.whites[KING]
 		opponent = BLACK
 	} else {
-		kingBB = g.Blacks[KING]
+		kingBB = g.blacks[KING]
 		opponent = WHITE
 	}
 	if kingBB == 0 {
@@ -121,7 +121,7 @@ func (g *Game) buildLegalMoveInfo() legalMoveInfo {
 		info.checkMask |= betweenLineMasks[info.king][checker]
 	}
 	if info.checkerCount < 2 {
-		g.fillAbsolutePinInfo(&info, g.Turn, opponent)
+		g.fillAbsolutePinInfo(&info, g.turn, opponent)
 	}
 	return info
 }
@@ -129,7 +129,7 @@ func (g *Game) buildLegalMoveInfo() legalMoveInfo {
 func (g *Game) appendLegalKingMoves(dst []Move, pieces, ours, theirs Bitboard, info *legalMoveInfo) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		targets := KING_ATTACKS_FROM[from] & ^g.Occupied
+		targets := KING_ATTACKS_FROM[from] & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			move := NewMove(from, to, EMPTY)
@@ -140,7 +140,7 @@ func (g *Game) appendLegalKingMoves(dst []Move, pieces, ours, theirs Bitboard, i
 		targets = KING_ATTACKS_FROM[from] & theirs
 		for targets > 0 {
 			to := Square(targets.popLSB())
-			move := NewMove(from, to, g.Squares[to])
+			move := NewMove(from, to, g.squares[to])
 			if g.canKingMoveWithInfo(move, info) {
 				dst = append(dst, move)
 			}
@@ -152,7 +152,7 @@ func (g *Game) appendLegalKingMoves(dst []Move, pieces, ours, theirs Bitboard, i
 func (g *Game) appendLegalJumpMoves(dst []Move, pieces, ours, theirs Bitboard, attackFrom []Bitboard, info *legalMoveInfo) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		targets := attackFrom[from] & ^g.Occupied
+		targets := attackFrom[from] & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			if !canNonKingMoveTo(from, to, info) {
@@ -166,7 +166,7 @@ func (g *Game) appendLegalJumpMoves(dst []Move, pieces, ours, theirs Bitboard, a
 			if !canNonKingMoveTo(from, to, info) {
 				continue
 			}
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
@@ -175,8 +175,8 @@ func (g *Game) appendLegalJumpMoves(dst []Move, pieces, ours, theirs Bitboard, a
 func (g *Game) appendLegalBishopMoves(dst []Move, pieces, ours, theirs Bitboard, info *legalMoveInfo) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		attacks := bishopAttacks(from, g.Occupied)
-		targets := attacks & ^g.Occupied
+		attacks := bishopAttacks(from, g.occupied)
+		targets := attacks & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			if !canNonKingMoveTo(from, to, info) {
@@ -190,7 +190,7 @@ func (g *Game) appendLegalBishopMoves(dst []Move, pieces, ours, theirs Bitboard,
 			if !canNonKingMoveTo(from, to, info) {
 				continue
 			}
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
@@ -199,8 +199,8 @@ func (g *Game) appendLegalBishopMoves(dst []Move, pieces, ours, theirs Bitboard,
 func (g *Game) appendLegalRookMoves(dst []Move, pieces, ours, theirs Bitboard, info *legalMoveInfo) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		attacks := rookAttacks(from, g.Occupied)
-		targets := attacks & ^g.Occupied
+		attacks := rookAttacks(from, g.occupied)
+		targets := attacks & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			if !canNonKingMoveTo(from, to, info) {
@@ -214,7 +214,7 @@ func (g *Game) appendLegalRookMoves(dst []Move, pieces, ours, theirs Bitboard, i
 			if !canNonKingMoveTo(from, to, info) {
 				continue
 			}
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
@@ -223,7 +223,7 @@ func (g *Game) appendLegalRookMoves(dst []Move, pieces, ours, theirs Bitboard, i
 func (g *Game) appendJumpMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard, attackFrom []Bitboard) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		targets := attackFrom[from] & ^g.Occupied
+		targets := attackFrom[from] & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			dst = append(dst, NewMove(from, to, EMPTY))
@@ -231,7 +231,7 @@ func (g *Game) appendJumpMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard
 		targets = attackFrom[from] & theirs
 		for targets > 0 {
 			to := Square(targets.popLSB())
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
@@ -240,8 +240,8 @@ func (g *Game) appendJumpMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard
 func (g *Game) appendBishopMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		attacks := bishopAttacks(from, g.Occupied)
-		targets := attacks & ^g.Occupied
+		attacks := bishopAttacks(from, g.occupied)
+		targets := attacks & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			dst = append(dst, NewMove(from, to, EMPTY))
@@ -249,7 +249,7 @@ func (g *Game) appendBishopMovesNoFilter(dst []Move, pieces, ours, theirs Bitboa
 		targets = attacks & theirs
 		for targets > 0 {
 			to := Square(targets.popLSB())
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
@@ -258,8 +258,8 @@ func (g *Game) appendBishopMovesNoFilter(dst []Move, pieces, ours, theirs Bitboa
 func (g *Game) appendRookMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard) []Move {
 	for pieces > 0 {
 		from := Square(pieces.popLSB())
-		attacks := rookAttacks(from, g.Occupied)
-		targets := attacks & ^g.Occupied
+		attacks := rookAttacks(from, g.occupied)
+		targets := attacks & ^g.occupied
 		for targets > 0 {
 			to := Square(targets.popLSB())
 			dst = append(dst, NewMove(from, to, EMPTY))
@@ -267,15 +267,15 @@ func (g *Game) appendRookMovesNoFilter(dst []Move, pieces, ours, theirs Bitboard
 		targets = attacks & theirs
 		for targets > 0 {
 			to := Square(targets.popLSB())
-			dst = append(dst, NewMove(from, to, g.Squares[to]))
+			dst = append(dst, NewMove(from, to, g.squares[to]))
 		}
 	}
 	return dst
 }
 
 func (g *Game) appendPawnMovesNoFilter(dst []Move, pawns Bitboard) []Move {
-	if g.Turn == WHITE {
-		oneStep := (pawns >> 8) & ^g.Occupied
+	if g.turn == WHITE {
+		oneStep := (pawns >> 8) & ^g.occupied
 		for targets := oneStep; targets > 0; {
 			to := Square(targets.popLSB())
 			from := to + 8
@@ -285,25 +285,25 @@ func (g *Game) appendPawnMovesNoFilter(dst []Move, pawns Bitboard) []Move {
 				dst = append(dst, NewMove(from, to, EMPTY))
 			}
 		}
-		twoStep := ((oneStep & Bitboard(RANK3_MASK)) >> 8) & ^g.Occupied
+		twoStep := ((oneStep & Bitboard(RANK3_MASK)) >> 8) & ^g.occupied
 		for targets := twoStep; targets > 0; {
 			to := Square(targets.popLSB())
 			dst = append(dst, NewMove(to+16, to, EMPTY))
 		}
-		leftCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) >> 7) & g.BlackPieces
-		rightCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) >> 9) & g.BlackPieces
+		leftCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) >> 7) & g.blackPieces
+		rightCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) >> 9) & g.blackPieces
 		for targets := leftCaptures; targets > 0; {
 			to := Square(targets.popLSB())
-			dst = g.appendPawnCaptureNoFilter(dst, to+7, to, g.Squares[to])
+			dst = g.appendPawnCaptureNoFilter(dst, to+7, to, g.squares[to])
 		}
 		for targets := rightCaptures; targets > 0; {
 			to := Square(targets.popLSB())
-			dst = g.appendPawnCaptureNoFilter(dst, to+9, to, g.Squares[to])
+			dst = g.appendPawnCaptureNoFilter(dst, to+9, to, g.squares[to])
 		}
 		return g.appendLegalEnPassantMoves(dst, pawns)
 	}
 
-	oneStep := (pawns << 8) & ^g.Occupied
+	oneStep := (pawns << 8) & ^g.occupied
 	for targets := oneStep; targets > 0; {
 		to := Square(targets.popLSB())
 		from := to - 8
@@ -313,34 +313,34 @@ func (g *Game) appendPawnMovesNoFilter(dst []Move, pawns Bitboard) []Move {
 			dst = append(dst, NewMove(from, to, EMPTY))
 		}
 	}
-	twoStep := ((oneStep & Bitboard(RANK6_MASK)) << 8) & ^g.Occupied
+	twoStep := ((oneStep & Bitboard(RANK6_MASK)) << 8) & ^g.occupied
 	for targets := twoStep; targets > 0; {
 		to := Square(targets.popLSB())
 		dst = append(dst, NewMove(to-16, to, EMPTY))
 	}
-	leftCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) << 7) & g.WhitePieces
-	rightCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) << 9) & g.WhitePieces
+	leftCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) << 7) & g.whitePieces
+	rightCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) << 9) & g.whitePieces
 	for targets := leftCaptures; targets > 0; {
 		to := Square(targets.popLSB())
-		dst = g.appendPawnCaptureNoFilter(dst, to-7, to, g.Squares[to])
+		dst = g.appendPawnCaptureNoFilter(dst, to-7, to, g.squares[to])
 	}
 	for targets := rightCaptures; targets > 0; {
 		to := Square(targets.popLSB())
-		dst = g.appendPawnCaptureNoFilter(dst, to-9, to, g.Squares[to])
+		dst = g.appendPawnCaptureNoFilter(dst, to-9, to, g.squares[to])
 	}
 	return g.appendLegalEnPassantMoves(dst, pawns)
 }
 
 func (g *Game) appendPawnCaptureNoFilter(dst []Move, from, to Square, captured Piece) []Move {
-	if isPromotionTarget(g.Turn, to) {
+	if isPromotionTarget(g.turn, to) {
 		return appendPromotions(dst, from, to, captured)
 	}
 	return append(dst, NewMove(from, to, captured))
 }
 
 func (g *Game) appendLegalPawnMoves(dst []Move, pawns Bitboard, info *legalMoveInfo) []Move {
-	if g.Turn == WHITE {
-		oneStep := (pawns >> 8) & ^g.Occupied
+	if g.turn == WHITE {
+		oneStep := (pawns >> 8) & ^g.occupied
 		for targets := oneStep; targets > 0; {
 			to := Square(targets.popLSB())
 			from := to + 8
@@ -348,7 +348,7 @@ func (g *Game) appendLegalPawnMoves(dst []Move, pawns Bitboard, info *legalMoveI
 		}
 
 		rank3 := oneStep & Bitboard(RANK3_MASK)
-		twoStep := (rank3 >> 8) & ^g.Occupied
+		twoStep := (rank3 >> 8) & ^g.occupied
 		for targets := twoStep; targets > 0; {
 			to := Square(targets.popLSB())
 			from := to + 16
@@ -357,20 +357,20 @@ func (g *Game) appendLegalPawnMoves(dst []Move, pawns Bitboard, info *legalMoveI
 			}
 		}
 
-		leftCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) >> 7) & g.BlackPieces
-		rightCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) >> 9) & g.BlackPieces
+		leftCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) >> 7) & g.blackPieces
+		rightCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) >> 9) & g.blackPieces
 		for targets := leftCaptures; targets > 0; {
 			to := Square(targets.popLSB())
-			dst = g.appendLegalPawnCapture(dst, to+7, to, g.Squares[to], info)
+			dst = g.appendLegalPawnCapture(dst, to+7, to, g.squares[to], info)
 		}
 		for targets := rightCaptures; targets > 0; {
 			to := Square(targets.popLSB())
-			dst = g.appendLegalPawnCapture(dst, to+9, to, g.Squares[to], info)
+			dst = g.appendLegalPawnCapture(dst, to+9, to, g.squares[to], info)
 		}
 		return g.appendLegalEnPassantMoves(dst, pawns)
 	}
 
-	oneStep := (pawns << 8) & ^g.Occupied
+	oneStep := (pawns << 8) & ^g.occupied
 	for targets := oneStep; targets > 0; {
 		to := Square(targets.popLSB())
 		from := to - 8
@@ -378,7 +378,7 @@ func (g *Game) appendLegalPawnMoves(dst []Move, pawns Bitboard, info *legalMoveI
 	}
 
 	rank6 := oneStep & Bitboard(RANK6_MASK)
-	twoStep := (rank6 << 8) & ^g.Occupied
+	twoStep := (rank6 << 8) & ^g.occupied
 	for targets := twoStep; targets > 0; {
 		to := Square(targets.popLSB())
 		from := to - 16
@@ -387,15 +387,15 @@ func (g *Game) appendLegalPawnMoves(dst []Move, pawns Bitboard, info *legalMoveI
 		}
 	}
 
-	leftCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) << 7) & g.WhitePieces
-	rightCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) << 9) & g.WhitePieces
+	leftCaptures := ((pawns & ^Bitboard(FILE_A_MASK)) << 7) & g.whitePieces
+	rightCaptures := ((pawns & ^Bitboard(FILE_H_MASK)) << 9) & g.whitePieces
 	for targets := leftCaptures; targets > 0; {
 		to := Square(targets.popLSB())
-		dst = g.appendLegalPawnCapture(dst, to-7, to, g.Squares[to], info)
+		dst = g.appendLegalPawnCapture(dst, to-7, to, g.squares[to], info)
 	}
 	for targets := rightCaptures; targets > 0; {
 		to := Square(targets.popLSB())
-		dst = g.appendLegalPawnCapture(dst, to-9, to, g.Squares[to], info)
+		dst = g.appendLegalPawnCapture(dst, to-9, to, g.squares[to], info)
 	}
 	return g.appendLegalEnPassantMoves(dst, pawns)
 }
@@ -404,7 +404,7 @@ func (g *Game) appendLegalPawnQuiet(dst []Move, from, to Square, info *legalMove
 	if !canNonKingMoveTo(from, to, info) {
 		return dst
 	}
-	if isPromotionTarget(g.Turn, to) {
+	if isPromotionTarget(g.turn, to) {
 		return appendPromotions(dst, from, to, EMPTY)
 	}
 	return append(dst, NewMove(from, to, EMPTY))
@@ -414,7 +414,7 @@ func (g *Game) appendLegalPawnCapture(dst []Move, from, to Square, captured Piec
 	if !canNonKingMoveTo(from, to, info) {
 		return dst
 	}
-	if isPromotionTarget(g.Turn, to) {
+	if isPromotionTarget(g.turn, to) {
 		return appendPromotions(dst, from, to, captured)
 	}
 	return append(dst, NewMove(from, to, captured))
@@ -429,12 +429,12 @@ func appendPromotions(dst []Move, from, to Square, captured Piece) []Move {
 }
 
 func (g *Game) appendLegalEnPassantMoves(dst []Move, pawns Bitboard) []Move {
-	if g.EnPassant == 0 {
+	if g.enPassant == 0 {
 		return dst
 	}
 
-	to := g.EnPassant
-	if g.Turn == WHITE {
+	to := g.enPassant
+	if g.turn == WHITE {
 		if to.File() > 0 {
 			dst = g.appendLegalEnPassantFrom(dst, pawns, to+7, to, to+8)
 		}
@@ -457,7 +457,7 @@ func (g *Game) appendLegalEnPassantFrom(dst []Move, pawns Bitboard, from, to, ca
 	if from > 63 || captured > 63 || (pawns&(Bitboard(1)<<from)) == 0 {
 		return dst
 	}
-	capturedPiece := g.Squares[captured]
+	capturedPiece := g.squares[captured]
 	if capturedPiece == EMPTY {
 		return dst
 	}
@@ -468,10 +468,10 @@ func (g *Game) appendLegalEnPassantFrom(dst []Move, pawns Bitboard, from, to, ca
 }
 
 func (g *Game) canEnPassantMove(from, to, captured Square) bool {
-	kingBB := g.Whites[KING]
+	kingBB := g.whites[KING]
 	opponent := Color(BLACK)
-	if g.Turn == BLACK {
-		kingBB = g.Blacks[KING]
+	if g.turn == BLACK {
+		kingBB = g.blacks[KING]
 		opponent = WHITE
 	}
 	if kingBB == 0 {
@@ -481,30 +481,30 @@ func (g *Game) canEnPassantMove(from, to, captured Square) bool {
 	fromBB := Bitboard(1) << from
 	toBB := Bitboard(1) << to
 	capturedBB := Bitboard(1) << captured
-	occupiedAfter := (g.Occupied &^ fromBB &^ capturedBB) | toBB
+	occupiedAfter := (g.occupied &^ fromBB &^ capturedBB) | toBB
 
 	var pieces [7]Bitboard
 	if opponent == WHITE {
-		pieces = g.Whites
+		pieces = g.whites
 	} else {
-		pieces = g.Blacks
+		pieces = g.blacks
 	}
 	pieces[PAWN] &^= capturedBB
 	return !isSquareAttackedByPieces(Square(kingBB.lsbIndex()), opponent, occupiedAfter, &pieces)
 }
 
 func (g *Game) appendLegalCastlingMoves(dst []Move, info *legalMoveInfo) []Move {
-	if g.Castling == 0 {
+	if g.castling == 0 {
 		return dst
 	}
 	for _, spec := range castlingSpecs {
-		if spec.color != g.Turn || (g.Castling&spec.right) == 0 {
+		if spec.color != g.turn || (g.castling&spec.right) == 0 {
 			continue
 		}
-		if g.Squares[spec.kingFrom] != spec.kingPiece || g.Squares[spec.rookFrom] != spec.rookPiece {
+		if g.squares[spec.kingFrom] != spec.kingPiece || g.squares[spec.rookFrom] != spec.rookPiece {
 			continue
 		}
-		if g.Occupied&spec.emptyMask != 0 {
+		if g.occupied&spec.emptyMask != 0 {
 			continue
 		}
 		dst = g.appendLegalCastle(dst, NewCastlingMove(spec.kingFrom, spec.kingTo), info)
@@ -546,15 +546,15 @@ func isPromotionTarget(turn Color, to Square) bool {
 }
 
 func (g *Game) attackersTo(square Square, attacker Color) Bitboard {
-	return g.attackersToWithOccupied(square, attacker, g.Occupied)
+	return g.attackersToWithOccupied(square, attacker, g.occupied)
 }
 
 func (g *Game) attackersToWithOccupied(square Square, attacker Color, occupied Bitboard) Bitboard {
 	var pieces *[7]Bitboard
 	if attacker == WHITE {
-		pieces = &g.Whites
+		pieces = &g.whites
 	} else {
-		pieces = &g.Blacks
+		pieces = &g.blacks
 	}
 
 	attackers := (KNIGHT_ATTACKS_FROM[square] & pieces[KNIGHT]) | (KING_ATTACKS_FROM[square] & pieces[KING])
@@ -568,9 +568,9 @@ func (g *Game) attackersToWithOccupied(square Square, attacker Color, occupied B
 func (g *Game) isSquareAttackedByWithOccupied(square Square, attacker Color, occupied Bitboard) bool {
 	var pieces *[7]Bitboard
 	if attacker == WHITE {
-		pieces = &g.Whites
+		pieces = &g.whites
 	} else {
-		pieces = &g.Blacks
+		pieces = &g.blacks
 	}
 	return isSquareAttackedByPieces(square, attacker, occupied, pieces)
 }
@@ -592,7 +592,7 @@ func isSquareAttackedByPieces(square Square, attacker Color, occupied Bitboard, 
 }
 
 func (g *Game) canKingMoveWithInfo(m Move, info *legalMoveInfo) bool {
-	opponent := oppositeColor(g.Turn)
+	opponent := oppositeColor(g.turn)
 	fromBB := Bitboard(1) << m.From()
 	toBB := Bitboard(1) << m.To()
 
@@ -602,12 +602,12 @@ func (g *Game) canKingMoveWithInfo(m Move, info *legalMoveInfo) bool {
 		}
 
 		spec := castlingSpecForKingTo(m.To())
-		inBetweenOccupied := (g.Occupied &^ fromBB) | (Bitboard(1) << spec.transit)
+		inBetweenOccupied := (g.occupied &^ fromBB) | (Bitboard(1) << spec.transit)
 		if g.isSquareAttackedByWithOccupied(spec.transit, opponent, inBetweenOccupied) {
 			return false
 		}
 
-		finalOccupied := g.Occupied
+		finalOccupied := g.occupied
 		finalOccupied &^= fromBB
 		finalOccupied &^= Bitboard(1) << spec.rookFrom
 		finalOccupied |= toBB
@@ -615,7 +615,7 @@ func (g *Game) canKingMoveWithInfo(m Move, info *legalMoveInfo) bool {
 		return !g.isSquareAttackedByWithOccupied(m.To(), opponent, finalOccupied)
 	}
 
-	occupiedAfter := (g.Occupied &^ fromBB) | toBB
+	occupiedAfter := (g.occupied &^ fromBB) | toBB
 	return !g.isSquareAttackedByWithOccupied(m.To(), opponent, occupiedAfter)
 }
 
@@ -708,16 +708,16 @@ func (g *Game) fillAbsolutePinInfo(info *legalMoveInfo, us, opponent Color) {
 	var ours Bitboard
 	var rookPinners, bishopPinners Bitboard
 	if us == WHITE {
-		ours = g.WhitePieces
+		ours = g.whitePieces
 	} else {
-		ours = g.BlackPieces
+		ours = g.blackPieces
 	}
 	if opponent == WHITE {
-		rookPinners = g.Whites[ROOK] | g.Whites[QUEEN]
-		bishopPinners = g.Whites[BISHOP] | g.Whites[QUEEN]
+		rookPinners = g.whites[ROOK] | g.whites[QUEEN]
+		bishopPinners = g.whites[BISHOP] | g.whites[QUEEN]
 	} else {
-		rookPinners = g.Blacks[ROOK] | g.Blacks[QUEEN]
-		bishopPinners = g.Blacks[BISHOP] | g.Blacks[QUEEN]
+		rookPinners = g.blacks[ROOK] | g.blacks[QUEEN]
+		bishopPinners = g.blacks[BISHOP] | g.blacks[QUEEN]
 	}
 
 	for _, direction := range ALL_DIRECTIONS {
@@ -731,13 +731,13 @@ func (g *Game) fillAbsolutePinInfo(info *legalMoveInfo, us, opponent Color) {
 			continue
 		}
 
-		pinned, ok := nearestRayBlocker(info.king, direction, g.Occupied)
+		pinned, ok := nearestRayBlocker(info.king, direction, g.occupied)
 		pinnedBB := Bitboard(1) << pinned
 		if !ok || (pinnedBB&ours) == 0 {
 			continue
 		}
 
-		pinner, ok := nearestRayBlocker(pinned, direction, g.Occupied)
+		pinner, ok := nearestRayBlocker(pinned, direction, g.occupied)
 		if !ok {
 			continue
 		}

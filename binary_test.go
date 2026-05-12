@@ -19,25 +19,25 @@ func TestBinaryEncoding(t *testing.T) {
 	err = b2.UnmarshalBinary(data)
 	require.NoError(t, err)
 
-	require.Equal(t, g.Turn, b2.Turn)
-	require.Equal(t, g.Castling, b2.Castling)
-	require.Equal(t, g.EnPassant, b2.EnPassant)
-	require.Equal(t, g.HalfMoves, b2.HalfMoves)
-	require.Equal(t, g.FullMoves, b2.FullMoves)
-	require.Equal(t, g.ZobristHash, b2.ZobristHash)
+	require.Equal(t, g.turn, b2.turn)
+	require.Equal(t, g.castling, b2.castling)
+	require.Equal(t, g.enPassant, b2.enPassant)
+	require.Equal(t, g.halfMoves, b2.halfMoves)
+	require.Equal(t, g.fullMoves, b2.fullMoves)
+	require.Equal(t, g.zobristHash, b2.zobristHash)
 	require.Equal(t, g.Occupation(), b2.Occupation())
-	require.Equal(t, len(g.PositionHistory), len(b2.PositionHistory))
+	require.Equal(t, len(g.positionHistory), len(b2.positionHistory))
 
-	for k, v := range g.PositionHistory {
-		require.Equal(t, v, b2.PositionHistory[k], "History count mismatch for hash %x", k)
+	for k, v := range g.positionHistory {
+		require.Equal(t, v, b2.positionHistory[k], "History count mismatch for hash %x", k)
 	}
 
 	// Verify move generation is consistent
 	g.GenerateLegalMoves()
 	b2.GenerateLegalMoves()
-	require.Equal(t, len(g.LegalMoves), len(b2.LegalMoves))
-	for i := range g.LegalMoves {
-		require.Equal(t, g.LegalMoves[i], b2.LegalMoves[i])
+	require.Equal(t, len(g.legalMoves), len(b2.legalMoves))
+	for i := range g.legalMoves {
+		require.Equal(t, g.legalMoves[i], b2.legalMoves[i])
 	}
 }
 
@@ -69,5 +69,5 @@ func TestBinaryDecodingRejectsInvalidPayloads(t *testing.T) {
 }
 
 func (g *Game) Occupation() uint64 {
-	return uint64(g.Occupied)
+	return uint64(g.occupied)
 }

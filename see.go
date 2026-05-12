@@ -24,7 +24,7 @@ var seePieceValue = [7]int{
 // SEE is square-based, not move-based: it derives the moving side's color from
 // the piece on `from`, not from g.SideToMove. Callers passing promotion or
 // en-passant moves supply the move's from/to squares; SEE detects both from
-// the source piece and engine state (g.EnPassant, the rank of `to`).
+// the source piece and engine state (g.enPassant, the rank of `to`).
 //
 // SEE assumes both sides recapture with their cheapest legal attacker until
 // continuing would lose material. It honors absolute pins (precomputed once
@@ -43,11 +43,11 @@ func (g *Game) SEE(from, to Square) int {
 	if !from.Valid() || !to.Valid() {
 		return 0
 	}
-	if g.Squares[from] == EMPTY {
+	if g.squares[from] == EMPTY {
 		return 0
 	}
 
-	mover := g.Squares[from]
+	mover := g.squares[from]
 	moverColor := mover.Color()
 	moverKind := mover.Kind()
 
@@ -56,8 +56,8 @@ func (g *Game) SEE(from, to Square) int {
 	promoMask := RANK1_MASK | RANK8_MASK
 
 	var capturedValue int
-	occ := g.Occupied
-	isEP := moverKind == PAWN && to == g.EnPassant && g.EnPassant != 0
+	occ := g.occupied
+	isEP := moverKind == PAWN && to == g.enPassant && g.enPassant != 0
 	if isEP {
 		capturedValue = seePieceValue[PAWN]
 		var capSq Square
@@ -68,7 +68,7 @@ func (g *Game) SEE(from, to Square) int {
 		}
 		occ &^= Bitboard(1) << uint(capSq)
 	} else {
-		capturedValue = seePieceValue[g.Squares[to].Kind()]
+		capturedValue = seePieceValue[g.squares[to].Kind()]
 	}
 	moverValueOnTo := seePieceValue[moverKind]
 	isPromo := moverKind == PAWN && (toBB&promoMask) != 0
@@ -153,15 +153,15 @@ func (g *Game) seeComputePins(side Color) (Bitboard, [64]Bitboard) {
 	var ourPieces Bitboard
 	var theirRookQueen, theirBishopQueen Bitboard
 	if side == WHITE {
-		ourKing = g.Whites[KING]
-		ourPieces = g.WhitePieces
-		theirRookQueen = g.Blacks[ROOK] | g.Blacks[QUEEN]
-		theirBishopQueen = g.Blacks[BISHOP] | g.Blacks[QUEEN]
+		ourKing = g.whites[KING]
+		ourPieces = g.whitePieces
+		theirRookQueen = g.blacks[ROOK] | g.blacks[QUEEN]
+		theirBishopQueen = g.blacks[BISHOP] | g.blacks[QUEEN]
 	} else {
-		ourKing = g.Blacks[KING]
-		ourPieces = g.BlackPieces
-		theirRookQueen = g.Whites[ROOK] | g.Whites[QUEEN]
-		theirBishopQueen = g.Whites[BISHOP] | g.Whites[QUEEN]
+		ourKing = g.blacks[KING]
+		ourPieces = g.blackPieces
+		theirRookQueen = g.whites[ROOK] | g.whites[QUEEN]
+		theirBishopQueen = g.whites[BISHOP] | g.whites[QUEEN]
 	}
 	if ourKing == 0 {
 		return pinned, pinRays
@@ -174,7 +174,7 @@ func (g *Game) seeComputePins(side Color) (Bitboard, [64]Bitboard) {
 			if ray&sliders == 0 {
 				continue
 			}
-			firstSq, ok := nearestRayBlocker(kingSq, dir, g.Occupied)
+			firstSq, ok := nearestRayBlocker(kingSq, dir, g.occupied)
 			if !ok {
 				continue
 			}
@@ -182,7 +182,7 @@ func (g *Game) seeComputePins(side Color) (Bitboard, [64]Bitboard) {
 			if firstBB&ourPieces == 0 {
 				continue
 			}
-			secondSq, ok := nearestRayBlocker(firstSq, dir, g.Occupied)
+			secondSq, ok := nearestRayBlocker(firstSq, dir, g.occupied)
 			if !ok {
 				continue
 			}
@@ -217,9 +217,9 @@ func (g *Game) seeLeastValuableAttacker(
 ) (Square, Piece, bool) {
 	var pieces *[7]Bitboard
 	if side == WHITE {
-		pieces = &g.Whites
+		pieces = &g.whites
 	} else {
-		pieces = &g.Blacks
+		pieces = &g.blacks
 	}
 
 	pawnAtts := pawnAttackersTo(to, side, pieces[PAWN]) & occ

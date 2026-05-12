@@ -89,17 +89,17 @@ func (g *Game) FEN() string {
 
 // SideToMove returns the side whose turn it is.
 func (g *Game) SideToMove() Color {
-	return g.Turn
+	return g.turn
 }
 
 // EnPassantSquare returns the current en-passant target square, or 0 if none.
 func (g *Game) EnPassantSquare() Square {
-	return g.EnPassant
+	return g.enPassant
 }
 
 // CastlingRights returns the current castling rights bitset.
 func (g *Game) CastlingRights() CastlingRights {
-	return CastlingRights(g.Castling)
+	return CastlingRights(g.castling)
 }
 
 // Has reports whether all requested castling rights are present.
@@ -130,12 +130,12 @@ func (r CastlingRights) String() string {
 
 // HalfMoveClock returns the halfmove clock used by the fifty/seventy-five move rules.
 func (g *Game) HalfMoveClock() int {
-	return g.HalfMoves
+	return g.halfMoves
 }
 
 // FullMoveNumber returns the fullmove number.
 func (g *Game) FullMoveNumber() int {
-	return g.FullMoves
+	return g.fullMoves
 }
 
 // PieceAt returns the piece on square. The bool is false for out-of-range squares.
@@ -143,23 +143,23 @@ func (g *Game) PieceAt(square Square) (Piece, bool) {
 	if square >= 64 {
 		return EMPTY, false
 	}
-	return g.Squares[square], true
+	return g.squares[square], true
 }
 
 // Board returns a copy of the board squares.
 func (g *Game) Board() [64]Piece {
-	return g.Squares
+	return g.squares
 }
 
 // BoardView returns a read-only view of the current board internals.
 func (g *Game) BoardView() BoardView {
 	return BoardView{
-		squares:     g.Squares,
-		whitePieces: g.WhitePieces,
-		blackPieces: g.BlackPieces,
-		whites:      g.Whites,
-		blacks:      g.Blacks,
-		occupied:    g.Occupied,
+		squares:     g.squares,
+		whitePieces: g.whitePieces,
+		blackPieces: g.blackPieces,
+		whites:      g.whites,
+		blacks:      g.blacks,
+		occupied:    g.occupied,
 	}
 }
 
@@ -212,9 +212,9 @@ func (v BoardView) OccupiedSquares() Bitboard {
 func (g *Game) Pieces(color Color) Bitboard {
 	switch color {
 	case WHITE:
-		return g.WhitePieces
+		return g.whitePieces
 	case BLACK:
-		return g.BlackPieces
+		return g.blackPieces
 	default:
 		return 0
 	}
@@ -227,9 +227,9 @@ func (g *Game) PiecesOfKind(color Color, kind Piece) Bitboard {
 	}
 	switch color {
 	case WHITE:
-		return g.Whites[kind]
+		return g.whites[kind]
 	case BLACK:
-		return g.Blacks[kind]
+		return g.blacks[kind]
 	default:
 		return 0
 	}
@@ -237,7 +237,7 @@ func (g *Game) PiecesOfKind(color Color, kind Piece) Bitboard {
 
 // OccupiedSquares returns the occupied-square bitboard.
 func (g *Game) OccupiedSquares() Bitboard {
-	return g.Occupied
+	return g.occupied
 }
 
 // LegalMovesInto copies legal moves into dst and returns the resulting slice.
@@ -250,7 +250,7 @@ func (g *Game) LegalMovesInto(dst []Move) []Move {
 // The key is useful for hash tables and same-version position comparisons. Use
 // FEN when persisting positions across package versions.
 func (g *Game) PositionKey() uint64 {
-	return g.ZobristHash
+	return g.zobristHash
 }
 
 // CanClaimThreefoldRepetition reports whether the current position has occurred at least three times.
@@ -292,8 +292,8 @@ func (g *Game) Snapshot() GameSnapshot {
 		Board:          g.Board(),
 		WhitePieces:    g.Pieces(WHITE),
 		BlackPieces:    g.Pieces(BLACK),
-		WhiteByKind:    g.Whites,
-		BlackByKind:    g.Blacks,
+		WhiteByKind:    g.whites,
+		BlackByKind:    g.blacks,
 		Occupied:       g.OccupiedSquares(),
 		EnPassant:      g.EnPassantSquare(),
 		Castling:       g.CastlingRights(),
@@ -310,17 +310,17 @@ func (g *Game) Snapshot() GameSnapshot {
 // Status returns the current game status.
 func (g *Game) Status() GameStatus {
 	switch {
-	case g.IsCheckmate:
+	case g.isCheckmate:
 		return GameStatusCheckmate
-	case g.IsStalement:
+	case g.isStalemate:
 		return GameStatusStalemate
-	case g.IsMaterialDraw:
+	case g.isMaterialDraw:
 		return GameStatusDrawInsufficientMaterial
 	case g.IsFivefoldRepetition():
 		return GameStatusDrawFivefoldRepetition
-	case g.IsSeventyFiveMoveRule:
+	case g.isSeventyFiveMoveRule:
 		return GameStatusDrawSeventyFiveMoveRule
-	case g.IsCheck:
+	case g.isCheck:
 		return GameStatusCheck
 	default:
 		return GameStatusOngoing
@@ -329,7 +329,7 @@ func (g *Game) Status() GameStatus {
 
 // IsTerminal reports whether the game is finished.
 func (g *Game) IsTerminal() bool {
-	return g.IsFinished
+	return g.isFinished
 }
 
 // String returns a stable machine-readable status name.

@@ -62,7 +62,7 @@ func TestPawnMoves(t *testing.T) {
 			g.GenerateLegalMoves()
 
 			var moves []string
-			for _, m := range g.LegalMoves {
+			for _, m := range g.legalMoves {
 				moves = append(moves, m.ToString())
 			}
 
@@ -82,7 +82,7 @@ func TestPromotionMovesDetails(t *testing.T) {
 
 	// expect 4 promotion moves from a7 to a8
 	promotionCount := 0
-	for _, m := range g.LegalMoves {
+	for _, m := range g.legalMoves {
 		if m.From() == CoordsToSquare(1, 0) && m.To() == CoordsToSquare(0, 0) && m.IsPromotionMove() {
 			promotionCount++
 		}
@@ -131,7 +131,7 @@ func TestCastling(t *testing.T) {
 			fen:         "4k3/8/8/8/8/8/8/R3K2R w K - 0 1",
 			description: "White Kingside, Rook Missing (implicitly handled by board logic which uses rook presence for rights usually, checking rights though)",
 			// If FEN says K, logic assumes rights exist. However, move logic checks for rook presence usually?
-			// Let's see move-logic.go:93: (g.Occupied&(0x3<<61)) == 0  -- checks empty squares f1, g1
+			// Let's see move-logic.go:93: (g.occupied&(0x3<<61)) == 0  -- checks empty squares f1, g1
 			// It implies King is at e1. It doesn't explicitly check Rook presence in GeneratePseudoMoves if castling bits are set,
 			// usually logic assumes if Castling bit is set, Rook is there.
 			// BUT standard chess rules say if rook is captured, right is lost.
@@ -167,7 +167,7 @@ func TestCastling(t *testing.T) {
 			g.GenerateLegalMoves()
 
 			var moves []string
-			for _, m := range g.LegalMoves {
+			for _, m := range g.legalMoves {
 				moves = append(moves, m.ToString())
 			}
 
@@ -186,10 +186,10 @@ func TestCastlingRequiresHomeKingAndRook(t *testing.T) {
 		g := &Game{}
 		require.NoError(t, g.LoadFEN("4k3/8/8/8/8/8/8/R3K2R w K - 0 1"))
 		g.capturePiece(WKS_ROOK_ORIGINAL_SQUARE, W_ROOK)
-		g.Squares[WKS_ROOK_ORIGINAL_SQUARE] = EMPTY
+		g.squares[WKS_ROOK_ORIGINAL_SQUARE] = EMPTY
 		g.GenerateLegalMoves()
 
-		assertNotContains(t, movesToStrings(g.LegalMoves), "e1 g1")
+		assertNotContains(t, movesToStrings(g.legalMoves), "e1 g1")
 	})
 
 	t.Run("king not on home square", func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestCastlingRequiresHomeKingAndRook(t *testing.T) {
 		g.justMove(NewMove(COORDS_TO_SQUARE["e1"], COORDS_TO_SQUARE["d1"], EMPTY))
 		g.GenerateLegalMoves()
 
-		assertNotContains(t, movesToStrings(g.LegalMoves), "d1 g1")
+		assertNotContains(t, movesToStrings(g.legalMoves), "d1 g1")
 	})
 }
 
@@ -221,18 +221,18 @@ func TestTryMoveFromCoordsAppliesLegalMove(t *testing.T) {
 func TestFastMoveRoundTripPreservesPosition(t *testing.T) {
 	g := NewGame()
 	startFen := g.ToFEN()
-	startHash := g.ZobristHash
-	startHistoryCount := g.PositionHistory[g.ZobristHash]
-	move := g.LegalMoves[0]
+	startHash := g.zobristHash
+	startHistoryCount := g.positionHistory[g.zobristHash]
+	move := g.legalMoves[0]
 
 	g.MakeMoveFast(move)
 	require.NotEqual(t, startFen, g.ToFEN())
 
 	g.UndoMoveFast(move)
 	require.Equal(t, startFen, g.ToFEN())
-	require.Equal(t, startHash, g.ZobristHash)
-	require.Equal(t, startHistoryCount, g.PositionHistory[g.ZobristHash])
-	require.Len(t, g.LegalMoves, 20)
+	require.Equal(t, startHash, g.zobristHash)
+	require.Equal(t, startHistoryCount, g.positionHistory[g.zobristHash])
+	require.Len(t, g.legalMoves, 20)
 }
 
 func TestCopyLegalMovesReusesCallerBuffer(t *testing.T) {
@@ -243,7 +243,7 @@ func TestCopyLegalMovesReusesCallerBuffer(t *testing.T) {
 
 	require.Len(t, moves, 20)
 	require.Equal(t, cap(buffer), cap(moves))
-	require.Equal(t, g.LegalMoves[0], moves[0])
+	require.Equal(t, g.legalMoves[0], moves[0])
 }
 
 // Test Check Evasion
@@ -256,7 +256,7 @@ func TestCheckEvasion(t *testing.T) {
 	g.GenerateLegalMoves()
 
 	moves := map[string]bool{}
-	for _, m := range g.LegalMoves {
+	for _, m := range g.legalMoves {
 		moves[m.ToString()] = true
 	}
 
@@ -453,7 +453,7 @@ func TestSAN(t *testing.T) {
 			g.GenerateLegalMoves()
 
 			found := false
-			for _, m := range g.LegalMoves {
+			for _, m := range g.legalMoves {
 				sFrom, sTo := m.ToFromToStrings()
 				if sFrom == tt.moveFrom && sTo == tt.moveTo {
 					if tt.promote != "" {
@@ -515,7 +515,7 @@ func TestUndoMoveLogic(t *testing.T) {
 	var madeMoves []Move
 
 	// Record hashes/state at each step
-	hashes := []uint64{g.ZobristHash}
+	hashes := []uint64{g.zobristHash}
 	fens := []string{g.ToFEN()}
 
 	for _, moveStr := range movesToMakeStr {
@@ -524,7 +524,7 @@ func TestUndoMoveLogic(t *testing.T) {
 
 		var move Move
 		found := false
-		for _, m := range g.LegalMoves {
+		for _, m := range g.legalMoves {
 			sFrom, sTo := m.ToFromToStrings()
 			if sFrom == fromStr && sTo == toStr {
 				move = m
@@ -538,7 +538,7 @@ func TestUndoMoveLogic(t *testing.T) {
 
 		g.MakeMove(move)
 		madeMoves = append(madeMoves, move)
-		hashes = append(hashes, g.ZobristHash)
+		hashes = append(hashes, g.zobristHash)
 		fens = append(fens, g.ToFEN())
 	}
 
@@ -554,8 +554,8 @@ func TestUndoMoveLogic(t *testing.T) {
 		expectedHash := hashes[i]
 		expectedFen := fens[i]
 
-		if g.ZobristHash != expectedHash {
-			t.Errorf("Hash mismatch after undoing move %d (%s). Expected %x, got %x", i, movesToMakeStr[i], expectedHash, g.ZobristHash)
+		if g.zobristHash != expectedHash {
+			t.Errorf("Hash mismatch after undoing move %d (%s). Expected %x, got %x", i, movesToMakeStr[i], expectedHash, g.zobristHash)
 		}
 		if g.ToFEN() != expectedFen {
 			t.Errorf("FEN mismatch after undoing move %d (%s). Expected %s, got %s", i, movesToMakeStr[i], expectedFen, g.ToFEN())
@@ -567,7 +567,7 @@ func TestUndoMoveRecursive(t *testing.T) {
 	// Better test: Do a random walk of depth N, then undo all, assert state equals start.
 	g := NewGame()
 	g.LoadFEN(STARTING_POSITION_FEN)
-	startHash := g.ZobristHash
+	startHash := g.zobristHash
 	startFen := g.ToFEN()
 
 	depth := 4
@@ -576,7 +576,7 @@ func TestUndoMoveRecursive(t *testing.T) {
 		if d == 0 {
 			return
 		}
-		moves := g.LegalMoves
+		moves := g.legalMoves
 		if len(moves) == 0 {
 			return
 		}
@@ -594,7 +594,7 @@ func TestUndoMoveRecursive(t *testing.T) {
 			// But to check if Undo works we rely on it working :P
 
 			// Hash before
-			hashBefore := g.ZobristHash
+			hashBefore := g.zobristHash
 			fenBefore := g.ToFEN()
 
 			g.MakeMove(m)
@@ -604,8 +604,8 @@ func TestUndoMoveRecursive(t *testing.T) {
 			g.UndoMove(m)
 
 			// Verify restoration
-			if g.ZobristHash != hashBefore {
-				t.Errorf("Hash mismatch after undo at depth %d. Move: %s. Expected %x, got %x", d, m.ToString(), hashBefore, g.ZobristHash)
+			if g.zobristHash != hashBefore {
+				t.Errorf("Hash mismatch after undo at depth %d. Move: %s. Expected %x, got %x", d, m.ToString(), hashBefore, g.zobristHash)
 			}
 			if g.ToFEN() != fenBefore {
 				t.Errorf("FEN mismatch after undo at depth %d. Move: %s. Expected %s, got %s", d, m.ToString(), fenBefore, g.ToFEN())
@@ -615,7 +615,7 @@ func TestUndoMoveRecursive(t *testing.T) {
 
 	perform(depth)
 
-	if g.ZobristHash != startHash {
+	if g.zobristHash != startHash {
 		t.Error("Final hash mismatch after traversal")
 	}
 	if g.ToFEN() != startFen {
