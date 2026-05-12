@@ -53,10 +53,24 @@ func (g *Game) SEE(from, to Square) int {
 
 	fromBB := Bitboard(1) << uint(from)
 
-	capturedValue := seePieceValue[g.Squares[to].Kind()]
+	var capturedValue int
+	occ := g.Occupied
+	isEP := moverKind == PAWN && to == g.EnPassant && g.EnPassant != 0
+	if isEP {
+		capturedValue = seePieceValue[PAWN]
+		var capSq Square
+		if moverColor == WHITE {
+			capSq = to + 8
+		} else {
+			capSq = to - 8
+		}
+		occ &^= Bitboard(1) << uint(capSq)
+	} else {
+		capturedValue = seePieceValue[g.Squares[to].Kind()]
+	}
 	moverValueOnTo := seePieceValue[moverKind]
 
-	occ := g.Occupied &^ fromBB
+	occ &^= fromBB
 
 	whitePinned, whitePinRays := g.seeComputePins(WHITE)
 	blackPinned, blackPinRays := g.seeComputePins(BLACK)
