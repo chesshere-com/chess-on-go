@@ -65,7 +65,7 @@ func (g *Game) SEE(from, to Square) int {
 	gain[0] = capturedValue
 	d := 0
 	pieceOnTo := moverValueOnTo
-	side := seeOpponent(moverColor)
+	side := oppositeColor(moverColor)
 
 	for {
 		var pinned Bitboard
@@ -93,7 +93,7 @@ func (g *Game) SEE(from, to Square) int {
 		}
 
 		pieceOnTo = nextValue
-		side = seeOpponent(side)
+		side = oppositeColor(side)
 
 		if d >= len(gain)-1 {
 			break
@@ -246,11 +246,4 @@ func seePickFiltered(candidates Bitboard, to Square, pinned Bitboard, pinRays *[
 		}
 	}
 	return 0, false
-}
-
-func seeOpponent(c Color) Color {
-	if c == WHITE {
-		return BLACK
-	}
-	return WHITE
 }
