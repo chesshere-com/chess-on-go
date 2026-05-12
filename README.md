@@ -20,6 +20,7 @@ This package powers [www.chesshere.com](https://www.chesshere.com).
   material, repetition, and 50/75-move-rule handling.
 - Read-only public accessors, snapshots, and draw-state helpers.
 - Search/perft helpers that avoid game-status bookkeeping overhead.
+- Static exchange evaluation via `Game.SEE(from, to)` for material-only swap analysis on a target square.
 - Optional CLI for validating FEN, listing legal moves, and running perft.
 
 ## Install

@@ -7,7 +7,7 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 
 ## Unreleased
 
-- No unreleased changes yet.
+- Add `Game.SEE(from, to Square) int` for static exchange evaluation.
 
 ## v0.1.0 - 2026-05-07
 
