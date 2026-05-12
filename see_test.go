@@ -59,9 +59,9 @@ func TestSEEComputePins_MissingKingReturnsZero(t *testing.T) {
 	// Use a board where black has no king (only valid via direct field manipulation,
 	// since LoadFEN rejects this — we set up a synthetic Game).
 	g := &Game{}
-	g.Whites[KING] = Bitboard(1) << uint(60) // e1
-	g.WhitePieces = g.Whites[KING]
-	g.Occupied = g.WhitePieces
+	g.whites[KING] = Bitboard(1) << uint(60) // e1
+	g.whitePieces = g.whites[KING]
+	g.occupied = g.whitePieces
 
 	pinned, _ := g.seeComputePins(BLACK) // black has no king
 	require.Zero(t, pinned)
@@ -77,7 +77,7 @@ func TestSEELVA_PicksPawnFirst(t *testing.T) {
 	d6, _ := ParseSquare("d6")
 
 	var pinRays [64]Bitboard
-	sq, kind, ok := g.seeLeastValuableAttacker(e5, BLACK, g.Occupied, 0, &pinRays)
+	sq, kind, ok := g.seeLeastValuableAttacker(e5, BLACK, g.occupied, 0, &pinRays)
 	require.True(t, ok)
 	require.Equal(t, d6, sq)
 	require.Equal(t, Piece(PAWN), kind)
@@ -89,7 +89,7 @@ func TestSEELVA_NoAttackerReturnsFalse(t *testing.T) {
 
 	e4, _ := ParseSquare("e4")
 	var pinRays [64]Bitboard
-	_, _, ok := g.seeLeastValuableAttacker(e4, BLACK, g.Occupied, 0, &pinRays)
+	_, _, ok := g.seeLeastValuableAttacker(e4, BLACK, g.occupied, 0, &pinRays)
 	require.False(t, ok)
 }
 
@@ -106,12 +106,12 @@ func TestSEELVA_FiltersPinnedAttacker(t *testing.T) {
 	// With pin filter active.
 	pinned, pinRays := g.seeComputePins(BLACK)
 	require.NotZero(t, pinned&(Bitboard(1)<<uint(b6)))
-	_, _, ok := g.seeLeastValuableAttacker(d5, BLACK, g.Occupied, pinned, &pinRays)
+	_, _, ok := g.seeLeastValuableAttacker(d5, BLACK, g.occupied, pinned, &pinRays)
 	require.False(t, ok, "pinned knight should be filtered out")
 
 	// Without pin filter (zeroed snapshot) — knight is found.
 	var empty [64]Bitboard
-	sq, kind, ok := g.seeLeastValuableAttacker(d5, BLACK, g.Occupied, 0, &empty)
+	sq, kind, ok := g.seeLeastValuableAttacker(d5, BLACK, g.occupied, 0, &empty)
 	require.True(t, ok)
 	require.Equal(t, b6, sq)
 	require.Equal(t, Piece(KNIGHT), kind)
@@ -134,11 +134,11 @@ func TestSEELVA_RespectsWorkingOccupancy(t *testing.T) {
 	// Bishop on e6 itself attacks d5/f5 but not e5; black king on e8
 	// is not adjacent to e5. LVA should be the bishop only if it
 	// attacked e5 — it doesn't. So LVA returns false.
-	_, _, ok := g.seeLeastValuableAttacker(e5, BLACK, g.Occupied, 0, &pinRays)
+	_, _, ok := g.seeLeastValuableAttacker(e5, BLACK, g.occupied, 0, &pinRays)
 	require.False(t, ok)
 
 	// Remove e6 from working occupancy — rook should now attack e5.
-	occ := g.Occupied &^ (Bitboard(1) << uint(e6))
+	occ := g.occupied &^ (Bitboard(1) << uint(e6))
 	sq, kind, ok := g.seeLeastValuableAttacker(e5, BLACK, occ, 0, &pinRays)
 	require.True(t, ok)
 	require.Equal(t, e7, sq)

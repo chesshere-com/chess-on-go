@@ -16,8 +16,8 @@ func (g *Game) GetMoveSan(m Move) string {
 	pgn := g.GetMoveSanWithoutSuffix(m)
 
 	g.makeMoveInternal(m, false, true)
-	isCheckmate := g.IsCheck && !g.hasMoves()
-	isCheck := g.IsCheck
+	isCheckmate := g.isCheck && !g.hasMoves()
+	isCheck := g.isCheck
 	g.undoMoveInternal(m, false, true)
 	if isCheckmate {
 		pgn += "#"
@@ -43,9 +43,9 @@ func (g *Game) GetMoveSanWithoutSuffix(m Move) string {
 			sb.WriteString("O-O-O")
 		}
 	} else {
-		movingKind := g.Squares[from].Kind()
+		movingKind := g.squares[from].Kind()
 		if movingKind != PAWN { // -------> 1.
-			sb.WriteString(strings.ToUpper(string(g.Squares[from].ToRune())))
+			sb.WriteString(strings.ToUpper(string(g.squares[from].ToRune())))
 		}
 
 		// Disambiguation:
@@ -79,11 +79,11 @@ func (g *Game) GetMoveSanWithoutSuffix(m Move) string {
 }
 
 func (g *Game) GetOthersOfSameKindMovingToSameTargetCounts(themove Move) (otherOfSameKind int, onSameFileCount int, onSameRankCount int) {
-	movingPiece := g.Squares[themove.From()]
+	movingPiece := g.squares[themove.From()]
 	from := themove.From()
 	to := themove.To()
-	for _, m := range g.LegalMoves {
-		if m == themove || m.To() != to || g.Squares[m.From()].Kind() != movingPiece.Kind() {
+	for _, m := range g.legalMoves {
+		if m == themove || m.To() != to || g.squares[m.From()].Kind() != movingPiece.Kind() {
 			continue
 		}
 		otherOfSameKind += 1

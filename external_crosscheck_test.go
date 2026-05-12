@@ -24,7 +24,7 @@ func TestLegalMovesMatchNotnilChess(t *testing.T) {
 		t.Run(fen, func(t *testing.T) {
 			g := &Game{}
 			require.NoError(t, g.LoadFEN(fen))
-			ours := sortedMoveUCIs(g.LegalMoves)
+			ours := sortedMoveUCIs(g.legalMoves)
 
 			option, err := notnil.FEN(fen)
 			require.NoError(t, err)

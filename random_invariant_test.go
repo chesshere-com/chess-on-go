@@ -22,10 +22,10 @@ func TestRandomGamesMaintainInvariantsAndUndo(t *testing.T) {
 		var movesPlayed []Move
 		var fens []string
 		var hashes []uint64
-		for ply := 0; ply < plies && len(g.LegalMoves) > 0 && !g.IsFinished; ply++ {
+		for ply := 0; ply < plies && len(g.legalMoves) > 0 && !g.isFinished; ply++ {
 			fens = append(fens, g.ToFEN())
-			hashes = append(hashes, g.ZobristHash)
-			move := g.LegalMoves[rng.Intn(len(g.LegalMoves))]
+			hashes = append(hashes, g.zobristHash)
+			move := g.legalMoves[rng.Intn(len(g.legalMoves))]
 			movesPlayed = append(movesPlayed, move)
 
 			g.MakeMove(move)
@@ -36,7 +36,7 @@ func TestRandomGamesMaintainInvariantsAndUndo(t *testing.T) {
 			g.UndoMove(movesPlayed[i])
 			assertGameInvariants(t, g)
 			require.Equal(t, fens[i], g.ToFEN())
-			require.Equal(t, hashes[i], g.ZobristHash)
+			require.Equal(t, hashes[i], g.zobristHash)
 		}
 		require.Equal(t, STARTING_POSITION_FEN, g.ToFEN())
 	}
@@ -48,7 +48,7 @@ func TestEveryLegalMoveFromKnownPositionsMaintainsInvariantsAndUndoes(t *testing
 			g := &Game{}
 			require.NoError(t, g.LoadFEN(pos.fen))
 			startFen := g.ToFEN()
-			startHash := g.ZobristHash
+			startHash := g.zobristHash
 
 			moves := g.LegalMovesList()
 			for _, move := range moves {
@@ -57,7 +57,7 @@ func TestEveryLegalMoveFromKnownPositionsMaintainsInvariantsAndUndoes(t *testing
 				g.UndoMove(move)
 				assertGameInvariants(t, g)
 				require.Equal(t, startFen, g.ToFEN())
-				require.Equal(t, startHash, g.ZobristHash)
+				require.Equal(t, startHash, g.zobristHash)
 			}
 		})
 	}
