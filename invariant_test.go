@@ -10,7 +10,7 @@ func assertGameInvariants(t *testing.T, g *Game) {
 	var blacks [7]Bitboard
 	whiteKings, blackKings := 0, 0
 
-	for square, piece := range g.Squares {
+	for square, piece := range g.squares {
 		if piece == EMPTY {
 			continue
 		}
@@ -45,27 +45,27 @@ func assertGameInvariants(t *testing.T, g *Game) {
 	if whitePieces&blackPieces != 0 {
 		t.Fatalf("white and black bitboards overlap: %064b", whitePieces&blackPieces)
 	}
-	if g.WhitePieces != whitePieces {
-		t.Fatalf("white pieces mismatch: got %064b want %064b", g.WhitePieces, whitePieces)
+	if g.whitePieces != whitePieces {
+		t.Fatalf("white pieces mismatch: got %064b want %064b", g.whitePieces, whitePieces)
 	}
-	if g.BlackPieces != blackPieces {
-		t.Fatalf("black pieces mismatch: got %064b want %064b", g.BlackPieces, blackPieces)
+	if g.blackPieces != blackPieces {
+		t.Fatalf("black pieces mismatch: got %064b want %064b", g.blackPieces, blackPieces)
 	}
-	if g.Occupied != occupied {
-		t.Fatalf("occupied mismatch: got %064b want %064b", g.Occupied, occupied)
+	if g.occupied != occupied {
+		t.Fatalf("occupied mismatch: got %064b want %064b", g.occupied, occupied)
 	}
-	if g.Occupied != g.WhitePieces|g.BlackPieces {
+	if g.occupied != g.whitePieces|g.blackPieces {
 		t.Fatalf("occupied is not union of colors")
 	}
 	for kind := PAWN; kind <= KING; kind++ {
-		if g.Whites[kind] != whites[kind] {
+		if g.whites[kind] != whites[kind] {
 			t.Fatalf("white piece kind %d bitboard mismatch", kind)
 		}
-		if g.Blacks[kind] != blacks[kind] {
+		if g.blacks[kind] != blacks[kind] {
 			t.Fatalf("black piece kind %d bitboard mismatch", kind)
 		}
 	}
-	if g.ZobristHash != g.computeZobrist() {
-		t.Fatalf("zobrist mismatch: got %x want %x", g.ZobristHash, g.computeZobrist())
+	if g.zobristHash != g.computeZobrist() {
+		t.Fatalf("zobrist mismatch: got %x want %x", g.zobristHash, g.computeZobrist())
 	}
 }

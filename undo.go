@@ -31,33 +31,33 @@ func (g *Game) undoMoveNoGenerate(m Move) {
 }
 
 func (g *Game) undoMoveInternal(m Move, updatePositionHistory, generateLegalMoves bool) {
-	if len(g.History) == 0 {
+	if len(g.history) == 0 {
 		return
 	}
 	// Decrement history count for current position
-	if updatePositionHistory && g.PositionHistory != nil {
-		g.PositionHistory[g.ZobristHash]--
-		if g.PositionHistory[g.ZobristHash] <= 0 {
-			delete(g.PositionHistory, g.ZobristHash)
+	if updatePositionHistory && g.positionHistory != nil {
+		g.positionHistory[g.zobristHash]--
+		if g.positionHistory[g.zobristHash] <= 0 {
+			delete(g.positionHistory, g.zobristHash)
 		}
 	}
 
 	// Pop state
-	state := g.History[len(g.History)-1]
-	g.History = g.History[:len(g.History)-1]
+	state := g.history[len(g.history)-1]
+	g.history = g.history[:len(g.history)-1]
 
 	// Restore simple fields
-	g.Castling = state.Castling
-	g.EnPassant = state.EnPassant
-	g.HalfMoves = state.HalfMoves
-	g.FullMoves = state.FullMoves
-	g.ZobristHash = state.ZobristHash
+	g.castling = state.Castling
+	g.enPassant = state.EnPassant
+	g.halfMoves = state.HalfMoves
+	g.fullMoves = state.FullMoves
+	g.zobristHash = state.ZobristHash
 
 	// Flip Turn back
-	if g.Turn == WHITE {
-		g.Turn = BLACK
+	if g.turn == WHITE {
+		g.turn = BLACK
 	} else {
-		g.Turn = WHITE
+		g.turn = WHITE
 	}
 
 	g.unmakeMove(m, state.CapturedPiece)

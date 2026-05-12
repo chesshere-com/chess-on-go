@@ -8,6 +8,19 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 ## Unreleased
 
 - Add `Game.SEE(from, to Square) int` for static exchange evaluation.
+- **Breaking:** remove deprecated public `Game` fields (`Fen`, `WhitePieces`, `BlackPieces`,
+  `Whites`, `Blacks`, `Occupied`, `Squares`, `EnPassant`, `Castling`, `Ply`,
+  `HalfMoves`, `FullMoves`, `Turn`, `PseudoMoves`, `LegalMoves`,
+  `PositionHistory`, `ZobristHash`, `IsCheck`, `IsCheckmate`, `IsStalement`,
+  `IsMaterialDraw`, `IsThreefoldRepetition`, `IsFiftyMoveRule`,
+  `IsSeventyFiveMoveRule`, `IsFinished`, `History`) and the deprecated
+  `E_INVALID_FEN` constant. Use the stable method API (`Game.FEN`,
+  `Game.Snapshot`, `Game.BoardView`, `Game.Pieces`, `Game.PieceAt`,
+  `Game.SideToMove`, `Game.CastlingRights`, `Game.EnPassantSquare`,
+  `Game.HalfMoveClock`, `Game.FullMoveNumber`, `Game.PositionKey`,
+  `Game.LegalMovesList`, `Game.LegalMovesInto`, `Game.Status`,
+  `Game.IsStalemate`, `Game.DrawStatus`, `Game.IsTerminal`) and
+  `errors.Is(err, ErrInvalidFEN)` instead.
 
 ## v0.1.0 - 2026-05-07
 

@@ -15,11 +15,10 @@ func NewSearchBoard(fen string) (*SearchBoard, error) {
 	if err := game.LoadFEN(fen); err != nil {
 		return nil, err
 	}
-	game.Fen = ""
-	game.PseudoMoves = nil
-	game.LegalMoves = nil
-	game.PositionHistory = nil
-	game.History = game.History[:0]
+	game.pseudoMoves = nil
+	game.legalMoves = nil
+	game.positionHistory = nil
+	game.history = game.history[:0]
 	return &SearchBoard{game: game}, nil
 }
 

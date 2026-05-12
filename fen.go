@@ -8,9 +8,6 @@ import (
 // STARTING_POSITION_FEN is the standard chess initial position.
 const STARTING_POSITION_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
-// Deprecated: use ErrInvalidFEN with errors.Is.
-const E_INVALID_FEN = "e:invalid:fen"
-
 // RUNE_TO_PIECE maps FEN piece runes to pieces.
 //
 // Compatibility: prefer PieceFromRune in new code.
@@ -64,7 +61,6 @@ func (g *Game) LoadFEN(fen string) error {
 
 	parsed := Game{}
 	parsed.Reset()
-	parsed.Fen = fen
 
 	idx, rankIdx := 0, 0
 	whiteKings, blackKings := 0, 0
@@ -128,15 +124,15 @@ func (g *Game) LoadFEN(fen string) error {
 
 	switch parts[1] {
 	case "w":
-		parsed.Turn = WHITE
+		parsed.turn = WHITE
 	case "b":
-		parsed.Turn = BLACK
+		parsed.turn = BLACK
 	default:
 		return invalidFENField(FENFieldSideToMove, "invalid side to move")
 	}
 
 	if parts[2] == "-" {
-		parsed.Castling = 0
+		parsed.castling = 0
 	} else {
 		seen := [256]bool{}
 		for i := 0; i < len(parts[2]); i++ {
@@ -147,13 +143,13 @@ func (g *Game) LoadFEN(fen string) error {
 			seen[c] = true
 			switch c {
 			case 'K':
-				parsed.Castling |= CASTLE_WKS
+				parsed.castling |= CASTLE_WKS
 			case 'Q':
-				parsed.Castling |= CASTLE_WQS
+				parsed.castling |= CASTLE_WQS
 			case 'k':
-				parsed.Castling |= CASTLE_BKS
+				parsed.castling |= CASTLE_BKS
 			case 'q':
-				parsed.Castling |= CASTLE_BQS
+				parsed.castling |= CASTLE_BQS
 			default:
 				return invalidFENField(FENFieldCastling, "invalid castling right")
 			}
@@ -164,16 +160,16 @@ func (g *Game) LoadFEN(fen string) error {
 	}
 
 	if parts[3] == "-" {
-		parsed.EnPassant = 0
+		parsed.enPassant = 0
 	} else if len(parts[3]) == 2 {
 		fileChar, rankChar := parts[3][0], parts[3][1]
 		if fileChar < 'a' || fileChar > 'h' || rankChar < '1' || rankChar > '8' {
 			return invalidFENField(FENFieldEnPassant, "invalid en-passant square")
 		}
-		if (parsed.Turn == WHITE && rankChar != '6') || (parsed.Turn == BLACK && rankChar != '3') {
+		if (parsed.turn == WHITE && rankChar != '6') || (parsed.turn == BLACK && rankChar != '3') {
 			return invalidFENField(FENFieldEnPassant, "invalid en-passant rank")
 		}
-		parsed.EnPassant = CoordsToSquare(8-int(rankChar-'0'), int(fileChar-'a'))
+		parsed.enPassant = CoordsToSquare(8-int(rankChar-'0'), int(fileChar-'a'))
 		if !parsed.enPassantStateMatchesBoard() {
 			return invalidFENField(FENFieldEnPassant, "en-passant state does not match board")
 		}
@@ -185,13 +181,13 @@ func (g *Game) LoadFEN(fen string) error {
 	if err != nil {
 		return invalidFENField(FENFieldHalfMoveClock, "invalid halfmove clock")
 	}
-	parsed.HalfMoves = halfMoves
+	parsed.halfMoves = halfMoves
 
 	fullMoves, err := parseFENNumber(parts[5])
 	if err != nil || fullMoves < 1 {
 		return invalidFENField(FENFieldFullMoveNumber, "invalid fullmove number")
 	}
-	parsed.FullMoves = fullMoves
+	parsed.fullMoves = fullMoves
 	if parsed.sideNotToMoveInCheck() {
 		return invalidFENField(FENFieldLegality, "side not to move is in check")
 	}
@@ -270,12 +266,12 @@ func (g *Game) ToFEN() string {
 	var i, emptyCount int = 0, 0
 	for rank := 0; rank < 8; rank++ {
 		for file := 0; file < 8; file++ {
-			if g.Squares[i] != EMPTY {
-				pieces += string(PIECE_TO_RUNE[g.Squares[i]])
+			if g.squares[i] != EMPTY {
+				pieces += string(PIECE_TO_RUNE[g.squares[i]])
 				i++
 				continue
 			}
-			for emptyCount = 0; file < 8 && g.Squares[i] == EMPTY; {
+			for emptyCount = 0; file < 8 && g.squares[i] == EMPTY; {
 				emptyCount++
 				i++
 				file++
@@ -290,37 +286,37 @@ func (g *Game) ToFEN() string {
 		}
 	}
 
-	if g.Turn == WHITE {
+	if g.turn == WHITE {
 		turn = "w"
 	} else {
 		turn = "b"
 	}
 
 	castling = ""
-	if (g.Castling & CASTLE_WKS) > 0 {
+	if (g.castling & CASTLE_WKS) > 0 {
 		castling += "K"
 	}
-	if (g.Castling & CASTLE_WQS) > 0 {
+	if (g.castling & CASTLE_WQS) > 0 {
 		castling += "Q"
 	}
-	if (g.Castling & CASTLE_BKS) > 0 {
+	if (g.castling & CASTLE_BKS) > 0 {
 		castling += "k"
 	}
-	if (g.Castling & CASTLE_BQS) > 0 {
+	if (g.castling & CASTLE_BQS) > 0 {
 		castling += "q"
 	}
 	if len(castling) == 0 {
 		castling = "-"
 	}
 
-	if g.EnPassant == 0 {
+	if g.enPassant == 0 {
 		enPassant = "-"
 	} else {
-		rank, file := squareCoords(g.EnPassant)
+		rank, file := squareCoords(g.enPassant)
 		enPassant = FILE_TO_STRING[file] + RANK_TO_STRING[rank]
 	}
 
-	return fmt.Sprintf("%s %s %s %s %d %d", pieces, turn, castling, enPassant, g.HalfMoves, g.FullMoves)
+	return fmt.Sprintf("%s %s %s %s %d %d", pieces, turn, castling, enPassant, g.halfMoves, g.fullMoves)
 }
 
 func parseFENNumber(token string) (int, error) {
@@ -339,34 +335,34 @@ func parseFENNumber(token string) (int, error) {
 }
 
 func (g *Game) castlingRightsMatchBoard() bool {
-	if (g.Castling&CASTLE_WKS) > 0 && (g.Squares[W_KING_INIT_SQUARE] != W_KING || g.Squares[WKS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
+	if (g.castling&CASTLE_WKS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WKS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
 		return false
 	}
-	if (g.Castling&CASTLE_WQS) > 0 && (g.Squares[W_KING_INIT_SQUARE] != W_KING || g.Squares[WQS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
+	if (g.castling&CASTLE_WQS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WQS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
 		return false
 	}
-	if (g.Castling&CASTLE_BKS) > 0 && (g.Squares[B_KING_INIT_SQUARE] != B_KING || g.Squares[BKS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
+	if (g.castling&CASTLE_BKS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BKS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
 		return false
 	}
-	if (g.Castling&CASTLE_BQS) > 0 && (g.Squares[B_KING_INIT_SQUARE] != B_KING || g.Squares[BQS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
+	if (g.castling&CASTLE_BQS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BQS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
 		return false
 	}
 	return true
 }
 
 func (g *Game) enPassantStateMatchesBoard() bool {
-	ep := g.EnPassant
-	if g.Turn == WHITE {
-		return ep+8 <= 63 && g.Squares[ep] == EMPTY && g.Squares[ep+8] == B_PAWN
+	ep := g.enPassant
+	if g.turn == WHITE {
+		return ep+8 <= 63 && g.squares[ep] == EMPTY && g.squares[ep+8] == B_PAWN
 	}
-	return ep >= 8 && g.Squares[ep] == EMPTY && g.Squares[ep-8] == W_PAWN
+	return ep >= 8 && g.squares[ep] == EMPTY && g.squares[ep-8] == W_PAWN
 }
 
 func (g *Game) sideNotToMoveInCheck() bool {
-	if g.Turn == WHITE {
-		king := g.Blacks[KING]
-		return king != 0 && g.isSquareAttackedByWithOccupied(Square(king.lsbIndex()), WHITE, g.Occupied)
+	if g.turn == WHITE {
+		king := g.blacks[KING]
+		return king != 0 && g.isSquareAttackedByWithOccupied(Square(king.lsbIndex()), WHITE, g.occupied)
 	}
-	king := g.Whites[KING]
-	return king != 0 && g.isSquareAttackedByWithOccupied(Square(king.lsbIndex()), BLACK, g.Occupied)
+	king := g.whites[KING]
+	return king != 0 && g.isSquareAttackedByWithOccupied(Square(king.lsbIndex()), BLACK, g.occupied)
 }
