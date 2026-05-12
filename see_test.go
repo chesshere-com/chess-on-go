@@ -241,3 +241,23 @@ func TestSEE_Promotion(t *testing.T) {
 		},
 	})
 }
+
+func TestSEE_SquareBasedAndSideAgnostic(t *testing.T) {
+	runSEECases(t, []seeCase{
+		{
+			name:     "square-based knight×queen, no defender (spec #7)",
+			fen:      "4k3/8/4q3/8/4N3/8/4R3/4K3 w - - 0 1",
+			from:     "e4", to: "e6", expected: 900,
+		},
+		{
+			name:     "square-based knight×queen, opposing rook on file (spec #8)",
+			fen:      "4k3/8/4q3/8/4N3/8/4r3/4K3 w - - 0 1",
+			from:     "e4", to: "e6", expected: 580,
+		},
+		{
+			name:     "side-to-move agnostic (spec #14)",
+			fen:      "1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 b - - 0 1",
+			from:     "e1", to: "e5", expected: 100,
+		},
+	})
+}
