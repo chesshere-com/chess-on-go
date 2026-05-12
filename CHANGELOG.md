@@ -5,9 +5,8 @@ All notable user-visible changes to this package should be documented here.
 Releases use semantic version tags in the form `v*.*.*`, for example
 `v0.1.0`.
 
-## Unreleased
+## v0.2.0 - 2026-05-12
 
-- Add `Game.SEE(from, to Square) int` for static exchange evaluation.
 - **Breaking:** remove deprecated public `Game` fields (`Fen`, `WhitePieces`, `BlackPieces`,
   `Whites`, `Blacks`, `Occupied`, `Squares`, `EnPassant`, `Castling`, `Ply`,
   `HalfMoves`, `FullMoves`, `Turn`, `PseudoMoves`, `LegalMoves`,
@@ -21,6 +20,10 @@ Releases use semantic version tags in the form `v*.*.*`, for example
   `Game.LegalMovesList`, `Game.LegalMovesInto`, `Game.Status`,
   `Game.IsStalemate`, `Game.DrawStatus`, `Game.IsTerminal`) and
   `errors.Is(err, ErrInvalidFEN)` instead.
+
+## v0.1.1 - 2026-05-12
+
+- Add `Game.SEE(from, to Square) int` for static exchange evaluation.
 
 ## v0.1.0 - 2026-05-07
 
