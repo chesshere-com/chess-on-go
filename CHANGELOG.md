@@ -5,6 +5,14 @@ All notable user-visible changes to this package should be documented here.
 Releases use semantic version tags in the form `v*.*.*`, for example
 `v0.1.0`.
 
+## Unreleased
+
+- Fix `parseFENNumber` overflow: halfmove/fullmove tokens with enough digits
+  to exceed `math.MaxInt` previously wrapped silently to a negative value,
+  which `ToFEN` then serialized and `LoadFEN` subsequently rejected — breaking
+  the `LoadFEN`/`ToFEN` round-trip. Such tokens now produce a `FENError` with
+  `Field` set to `FENFieldHalfMoveClock` or `FENFieldFullMoveNumber`.
+
 ## v0.2.0 - 2026-05-12
 
 - **Breaking:** remove deprecated public `Game` fields (`Fen`, `WhitePieces`, `BlackPieces`,
