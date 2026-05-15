@@ -5,7 +5,7 @@ All notable user-visible changes to this package should be documented here.
 Releases use semantic version tags in the form `v*.*.*`, for example
 `v0.1.0`.
 
-## Unreleased
+## v0.21.1 - 2026-05-15
 
 - Fix `parseFENNumber` overflow: halfmove/fullmove tokens with enough digits
   to exceed `math.MaxInt` previously wrapped silently to a negative value,
