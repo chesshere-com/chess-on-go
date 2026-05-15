@@ -61,7 +61,9 @@ func TestFENErrorsExposeFieldContext(t *testing.T) {
 		{"castling", "4k3/8/8/8/8/8/8/4K3 w K - 0 1", FENFieldCastling},
 		{"en passant", "4k3/8/8/8/8/8/8/4K3 w - e5 0 1", FENFieldEnPassant},
 		{"halfmove", "4k3/8/8/8/8/8/8/4K3 w - - x 1", FENFieldHalfMoveClock},
+		{"halfmove overflow", "4k3/8/8/8/8/8/8/4K3 w - - 10000000000000000000 1", FENFieldHalfMoveClock},
 		{"fullmove", "4k3/8/8/8/8/8/8/4K3 w - - 0 0", FENFieldFullMoveNumber},
+		{"fullmove overflow", "4k3/8/8/8/8/8/8/4K3 w - - 0 10000000000000000000", FENFieldFullMoveNumber},
 		{"legality", "4k3/8/8/8/8/8/4R3/4K3 w - - 0 1", FENFieldLegality},
 	}
 

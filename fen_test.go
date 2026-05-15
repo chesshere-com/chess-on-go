@@ -54,6 +54,18 @@ func TestLoadFENRejectsInvalidPositions(t *testing.T) {
 	}
 }
 
+// TestLoadFENRejectsOverflowingClocks is a regression test for a fuzzer-found
+// bug in parseFENNumber: halfmove/fullmove tokens with enough digits to exceed
+// math.MaxInt silently wrapped to a negative value, which ToFEN then serialized
+// and LoadFEN subsequently rejected — breaking the LoadFEN/ToFEN round-trip.
+func TestLoadFENRejectsOverflowingClocks(t *testing.T) {
+	// The exact reproducer from the bug report.
+	const reproducer = "r1B1k1B1/1B1b1b1B/8/4B3/6B1/5B2/1B1B1B2/1B1BK1B1 b q - 10000000000000000000 1"
+
+	g := &Game{}
+	require.Error(t, g.LoadFEN(reproducer))
+}
+
 func TestLoadFENRefreshesLegalMovesAndStatus(t *testing.T) {
 	g := &Game{}
 	require.NoError(t, g.LoadFEN(STARTING_POSITION_FEN))
