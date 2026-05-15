@@ -2,6 +2,7 @@ package chessongo
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 )
 
@@ -329,7 +330,11 @@ func parseFENNumber(token string) (int, error) {
 		if d < '0' || d > '9' {
 			return 0, invalidFEN("invalid format")
 		}
-		value = value*10 + int(d-'0')
+		digit := int(d - '0')
+		if value > (math.MaxInt-digit)/10 {
+			return 0, invalidFEN("invalid format")
+		}
+		value = value*10 + digit
 	}
 	return value, nil
 }
