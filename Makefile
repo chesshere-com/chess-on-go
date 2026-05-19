@@ -22,8 +22,8 @@ bench-snapshot:
 bench-short:
 	go test -run '^$$' -bench='BenchmarkGenerateLegalMoves|BenchmarkPerft' -benchmem -benchtime=500ms -count=1 ./...
 bench-smoke:
-	go test -run '^$$' -bench='BenchmarkGenerateLegalMoves|BenchmarkPerft/InitialDepth4' -benchmem -benchtime=100ms -count=1 ./... | tee bench-smoke.txt
-	awk 'BEGIN { found_gen=0; found_perft=0 } /BenchmarkGenerateLegalMoves\// { found_gen=1; if ($$3 > 5000) { printf("legal move generation benchmark too slow: %s ns/op\n", $$3); exit 1 } } /BenchmarkPerft\/InitialDepth4-/ { found_perft=1; if ($$3 > 50000000) { printf("initial depth 4 perft benchmark too slow: %s ns/op\n", $$3); exit 1 } } END { if (!found_gen || !found_perft) { print "missing benchmark smoke results"; exit 1 } }' bench-smoke.txt
+	go test -run '^$$' -bench='BenchmarkGenerateLegalMoves|BenchmarkPerft/InitialDepth4|BenchmarkSEE' -benchmem -benchtime=100ms -count=1 ./... | tee bench-smoke.txt
+	awk 'BEGIN { found_gen=0; found_perft=0; found_see=0 } /BenchmarkGenerateLegalMoves\// { found_gen=1; if ($$3 > 5000) { printf("legal move generation benchmark too slow: %s ns/op\n", $$3); exit 1 } } /BenchmarkPerft\/InitialDepth4-/ { found_perft=1; if ($$3 > 50000000) { printf("initial depth 4 perft benchmark too slow: %s ns/op\n", $$3); exit 1 } } /BenchmarkSEE-/ { found_see=1; if ($$3 > 1000) { printf("SEE benchmark too slow: %s ns/op\n", $$3); exit 1 } } END { if (!found_gen || !found_perft || !found_see) { print "missing benchmark smoke results"; exit 1 } }' bench-smoke.txt
 benchstat:
 	benchstat bench-before.txt bench-current.txt
 install-benchstat:

@@ -232,17 +232,19 @@ func (g *Game) seeLeastValuableAttacker(
 		return sq, KNIGHT, true
 	}
 
-	bishopAtts := bishopAttacks(to, occ) & pieces[BISHOP] & occ
+	bAtts := bishopAttacks(to, occ)
+	bishopAtts := bAtts & pieces[BISHOP] & occ
 	if sq, ok := seePickFiltered(bishopAtts, to, pinned, pinRays); ok {
 		return sq, BISHOP, true
 	}
 
-	rookAtts := rookAttacks(to, occ) & pieces[ROOK] & occ
+	rAtts := rookAttacks(to, occ)
+	rookAtts := rAtts & pieces[ROOK] & occ
 	if sq, ok := seePickFiltered(rookAtts, to, pinned, pinRays); ok {
 		return sq, ROOK, true
 	}
 
-	queenAtts := (rookAttacks(to, occ) | bishopAttacks(to, occ)) & pieces[QUEEN] & occ
+	queenAtts := (rAtts | bAtts) & pieces[QUEEN] & occ
 	if sq, ok := seePickFiltered(queenAtts, to, pinned, pinRays); ok {
 		return sq, QUEEN, true
 	}

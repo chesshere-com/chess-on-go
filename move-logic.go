@@ -2,59 +2,17 @@ package chessongo
 
 // Checks whether our king is in check or not
 func (g *Game) ComputeIsCheck() bool {
-	var kingBB, theirsAll, attackers Bitboard
-	var theirs []Bitboard
+	var kingBB Bitboard
 	if g.turn == WHITE {
-		kingBB, theirs, theirsAll = g.whites[KING], g.blacks[:], g.blackPieces
+		kingBB = g.whites[KING]
 	} else {
-		kingBB, theirs, theirsAll = g.blacks[KING], g.whites[:], g.whitePieces
+		kingBB = g.blacks[KING]
 	}
 	if kingBB == 0 {
 		return false
 	}
 	kingIdx := kingBB.lsbIndex()
-	possibleAttackers := theirsAll & ATTACKS_TO[kingIdx]
-
-	attackers = (theirs[ROOK] | theirs[QUEEN]) & possibleAttackers
-	if attackers > 0 && rookAttacks(Square(kingIdx), g.occupied)&attackers > 0 {
-		return true
-	}
-
-	attackers = (theirs[BISHOP] | theirs[QUEEN]) & possibleAttackers
-	if attackers > 0 && bishopAttacks(Square(kingIdx), g.occupied)&attackers > 0 {
-		return true
-	}
-
-	attackers = theirs[KNIGHT] & possibleAttackers
-	for attackers > 0 {
-		from := attackers.popLSB()
-		if KNIGHT_ATTACKS_FROM[from]&kingBB > 0 {
-			return true
-		}
-	}
-
-	if g.turn == WHITE {
-		// Black pawns attack “down” the board (towards higher square indices).
-		if ((g.blacks[PAWN]&^Bitboard(FILE_A_MASK))<<7)&kingBB > 0 ||
-			((g.blacks[PAWN]&^Bitboard(FILE_H_MASK))<<9)&kingBB > 0 {
-			return true
-		}
-	} else {
-		// White pawns attack “up” the board (towards lower square indices).
-		if ((g.whites[PAWN]&^Bitboard(FILE_H_MASK))>>7)&kingBB > 0 ||
-			((g.whites[PAWN]&^Bitboard(FILE_A_MASK))>>9)&kingBB > 0 {
-			return true
-		}
-	}
-
-	attackers = theirs[KING] & possibleAttackers
-	if attackers > 0 {
-		from := attackers.popLSB()
-		if KING_ATTACKS_FROM[from]&kingBB > 0 {
-			return true
-		}
-	}
-	return false
+	return g.isSquareAttackedByWithOccupied(Square(kingIdx), oppositeColor(g.turn), g.occupied)
 }
 
 // Checks whether the given move is possible or not
