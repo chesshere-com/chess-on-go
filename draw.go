@@ -41,7 +41,3 @@ const (
 func allBishopsOnSameColor(bishops Bitboard) bool {
 	return (bishops & lightSquares == 0) || (bishops & darkSquares == 0)
 }
-
-func squareColor(square Square) int {
-	return (square.Rank() + square.File()) & 1
-}
