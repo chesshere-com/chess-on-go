@@ -33,18 +33,13 @@ func (g *Game) hasInsufficientMaterial() bool {
 	return true
 }
 
+const (
+	lightSquares Bitboard = 0xAA55AA55AA55AA55
+	darkSquares  Bitboard = ^lightSquares
+)
+
 func allBishopsOnSameColor(bishops Bitboard) bool {
-	if bishops == 0 {
-		return true
-	}
-	first := Square(bishops.popLSB())
-	color := squareColor(first)
-	for bishops > 0 {
-		if squareColor(Square(bishops.popLSB())) != color {
-			return false
-		}
-	}
-	return true
+	return (bishops & lightSquares == 0) || (bishops & darkSquares == 0)
 }
 
 func squareColor(square Square) int {

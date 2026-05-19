@@ -2,18 +2,33 @@ package chessongo
 
 import (
 	"math/rand"
-	"sync"
 )
 
 var (
-	zobristOnce       sync.Once
-	zobristPiece      [12][64]uint64
-	zobristCastling   [16]uint64
-	zobristEnPassant  [8]uint64
-	zobristTurnToMove uint64
+	zobristPieceIndexTable [24]int
+	zobristPiece           [12][64]uint64
+	zobristCastling        [16]uint64
+	zobristEnPassant       [8]uint64
+	zobristTurnToMove      uint64
 )
 
-func initZobrist() {
+func init() {
+	for i := range zobristPieceIndexTable {
+		zobristPieceIndexTable[i] = -1
+	}
+	zobristPieceIndexTable[W_PAWN] = 0
+	zobristPieceIndexTable[W_KNIGHT] = 1
+	zobristPieceIndexTable[W_BISHOP] = 2
+	zobristPieceIndexTable[W_ROOK] = 3
+	zobristPieceIndexTable[W_QUEEN] = 4
+	zobristPieceIndexTable[W_KING] = 5
+	zobristPieceIndexTable[B_PAWN] = 6
+	zobristPieceIndexTable[B_KNIGHT] = 7
+	zobristPieceIndexTable[B_BISHOP] = 8
+	zobristPieceIndexTable[B_ROOK] = 9
+	zobristPieceIndexTable[B_QUEEN] = 10
+	zobristPieceIndexTable[B_KING] = 11
+
 	rng := rand.New(rand.NewSource(1))
 	for i := 0; i < 12; i++ {
 		for j := 0; j < 64; j++ {
@@ -29,43 +44,14 @@ func initZobrist() {
 	zobristTurnToMove = rng.Uint64()
 }
 
-func ensureZobrist() {
-	zobristOnce.Do(initZobrist)
-}
-
 func zobristPieceIndex(p Piece) int {
-	switch p {
-	case W_PAWN:
-		return 0
-	case W_KNIGHT:
-		return 1
-	case W_BISHOP:
-		return 2
-	case W_ROOK:
-		return 3
-	case W_QUEEN:
-		return 4
-	case W_KING:
-		return 5
-	case B_PAWN:
-		return 6
-	case B_KNIGHT:
-		return 7
-	case B_BISHOP:
-		return 8
-	case B_ROOK:
-		return 9
-	case B_QUEEN:
-		return 10
-	case B_KING:
-		return 11
-	default:
+	if p >= 24 {
 		return -1
 	}
+	return zobristPieceIndexTable[p]
 }
 
 func (g *Game) computeZobrist() uint64 {
-	ensureZobrist()
 	h := uint64(0)
 	for sq, piece := range g.squares {
 		idx := zobristPieceIndex(piece)
