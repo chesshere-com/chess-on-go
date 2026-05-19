@@ -137,3 +137,18 @@ func benchmarkPerft(b *testing.B, fen string, depth int) {
 		_ = perft(game, depth)
 	}
 }
+
+func BenchmarkSEE(b *testing.B) {
+	b.ReportAllocs()
+	g := &Game{}
+	// Position with a lot of potential exchanges on d4/d5
+	if err := g.LoadFEN("r1bqk2r/ppp2ppp/2n1pn2/3p4/3PP3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 5"); err != nil {
+		b.Fatalf("init fen: %v", err)
+	}
+	from, _ := ParseSquare("e4")
+	to, _ := ParseSquare("d5")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = g.SEE(from, to)
+	}
+}
