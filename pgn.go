@@ -470,16 +470,19 @@ func tokenizePGNMoves(pgn string) []string {
 			}
 			continue
 		}
-		if lineStart {
-			inTag = c == '['
-		}
 		if c == '\n' {
 			lineStart = true
 			inTag = false
 			flush()
 			continue
 		}
-		lineStart = false
+		if lineStart {
+			if c == ' ' || c == '\t' || c == '\r' {
+				continue
+			}
+			inTag = c == '['
+			lineStart = false
+		}
 
 		if inTag {
 			continue

@@ -4,7 +4,6 @@ type GameState struct {
 	CapturedPiece Piece
 	Castling      int
 	EnPassant     Square
-	Ply           int
 	HalfMoves     int
 	FullMoves     int
 	ZobristHash   uint64
