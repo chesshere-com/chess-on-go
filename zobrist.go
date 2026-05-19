@@ -76,7 +76,7 @@ func (g *Game) computeZobrist() uint64 {
 
 	h ^= zobristCastling[g.castling&0xF]
 
-	if g.enPassant != 0 && g.hasLegalEnPassantCapture() {
+	if g.enPassant != 0 && g.hasAdjacentPawnForEnPassant() {
 		file := g.enPassant.File()
 		h ^= zobristEnPassant[file]
 	}
@@ -88,7 +88,7 @@ func (g *Game) computeZobrist() uint64 {
 	return h
 }
 
-func (g *Game) hasLegalEnPassantCapture() bool {
+func (g *Game) hasAdjacentPawnForEnPassant() bool {
 	if g.enPassant == 0 {
 		return false
 	}

@@ -407,3 +407,18 @@ func TestExtractFENFromPGNEdgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadPGNWithLeadingSpaces(t *testing.T) {
+	pgn := `
+  [Event "Test With Spaces"]
+  [Site "Berlin"]
+  [Result "*"]
+
+  1. e4 e5 *
+`
+
+	g := &Game{}
+	require.NoError(t, g.LoadPGN(pgn))
+	require.Equal(t, "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", g.ToFEN())
+	require.Equal(t, "Test With Spaces", g.PGNTags()["Event"])
+}
