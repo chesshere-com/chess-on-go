@@ -1,0 +1,24 @@
+Command:
+go test -run '^$' -bench='BenchmarkGenerateLegalMoves|BenchmarkPerft|BenchmarkCompare' -benchmem -benchtime=500ms -count=1 ./...
+
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	 2070578	       292.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	  965716	       621.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	 3795742	       161.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	 2197198	       265.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	     100	   5524925 ns/op	   1.61 MB/s	     992 B/op	       8 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	       4	 134412636 ns/op	   1.47 MB/s	    2208 B/op	      16 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	       1	3607174833 ns/op	   1.35 MB/s	    3488 B/op	      22 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	       5	 124377275 ns/op	   0.79 MB/s	    2240 B/op	      11 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	       1	5080854000 ns/op	   0.80 MB/s	    4048 B/op	      18 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	21560887	        28.10 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	12285672	        47.78 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	  492777	      1223 ns/op	    1520 B/op	       6 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   36231	     16476 ns/op	    8359 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	  322288	      1813 ns/op	    1632 B/op	       6 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   34376	     17499 ns/op	    8743 B/op	     210 allocs/op
+PASS
+ok  	github.com/chesshere-com/chess-on-go	28.303s
