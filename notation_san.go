@@ -15,10 +15,13 @@ import "strings"
 func (g *Game) GetMoveSan(m Move) string {
 	pgn := g.GetMoveSanWithoutSuffix(m)
 
-	g.makeMoveInternal(m, false, true)
-	isCheckmate := g.isCheck && !g.hasMoves()
-	isCheck := g.isCheck
-	g.undoMoveInternal(m, false, true)
+	clone := *g
+	clone.legalMoves = nil
+	clone.pseudoMoves = nil
+	clone.history = nil
+	clone.makeMoveInternal(m, false, true)
+	isCheckmate := clone.isCheck && !clone.hasMoves()
+	isCheck := clone.isCheck
 	if isCheckmate {
 		pgn += "#"
 	} else if isCheck {

@@ -30,25 +30,14 @@ var KNIGHT_ATTACKS_FROM = [64]Bitboard{}
 // Compatibility: this low-level table is retained for older callers.
 var KING_ATTACKS_FROM = [64]Bitboard{}
 
-// BISHOP_ATTACKS_FROM contains bishop ray attacks from each square on an empty board.
-//
-// Compatibility: this low-level table is retained for older callers.
-var BISHOP_ATTACKS_FROM = [64]Bitboard{}
 
-// ROOK_ATTACKS_FROM contains rook ray attacks from each square on an empty board.
-//
-// Compatibility: this low-level table is retained for older callers.
-var ROOK_ATTACKS_FROM = [64]Bitboard{}
 
 // ATTACKS_TO contains ray attacks to each square on an empty board.
 //
 // Compatibility: this low-level table is retained for older callers.
 var ATTACKS_TO = [64]Bitboard{}
 
-// RANK_ATTACKS is a historical rank attack lookup table.
-//
-// Compatibility: this low-level table is retained for older callers.
-var RANK_ATTACKS = [64][64]Bitboard{}
+
 
 // RAY_MASKS contains ray masks for each direction and square.
 //
@@ -66,8 +55,6 @@ func init() {
 func initAttacksFrom() {
 	initKingKnightAttacksFrom(KING_ATTACKS_FROM[:], KING_RANK_FILE_SHIFTS)
 	initKingKnightAttacksFrom(KNIGHT_ATTACKS_FROM[:], KNIGHT_RANK_FILE_SHIFTS)
-	initRayAttackFrom(BISHOP_ATTACKS_FROM[:], BISHOP_DIRECTIONS[:])
-	initRayAttackFrom(ROOK_ATTACKS_FROM[:], ROOK_DIRECTIONS[:])
 }
 
 /*********************************
@@ -111,22 +98,7 @@ func initKingKnightAttacksFrom(attacksFrom []Bitboard, shifts [8][2]int) {
 *    0 0 0 0 1 0 0 0
 *
 *********************************/
-func initRayAttackFrom(attacksFrom []Bitboard, rayDirections []Direction) {
-	for i := 0; i < 64; i++ {
-		attacksFrom[i] = Bitboard(0)
-		for _, direction := range rayDirections {
-			ray := Ray{square: Square(i), direction: Direction(direction)}
-			for {
-				onBoard, nextRaySquare := ray.step()
-				if !onBoard {
-					break
-				}
-				attacksFrom[i] |= Bitboard(1) << uint(nextRaySquare)
-			}
-		}
-	}
 
-}
 
 /*********************************
 *    Example RayMask of square D5 (Index: 27) in North West direction
