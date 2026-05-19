@@ -20,22 +20,8 @@ func squareCoords(sq Square) (int, int) {
 	return int(sq) / 8, int(sq) % 8
 }
 
-// FILES maps zero-based file indexes to file runes.
-//
-// Compatibility: prefer Square.FileLetter in new code.
-var FILES = map[int]rune{
-	0: 'a',
-	1: 'b',
-	2: 'c',
-	3: 'd',
-	4: 'e',
-	5: 'f',
-	6: 'g',
-	7: 'h',
-}
-
 func file(sq Square) rune {
-	return FILES[sq.File()]
+	return rune('a' + sq.File())
 }
 
 func rank(sq Square) int {

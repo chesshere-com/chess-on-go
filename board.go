@@ -32,7 +32,6 @@ type Game struct {
 	squares               [64]Piece
 	enPassant             Square
 	castling              int
-	ply                   int
 	halfMoves             int
 	fullMoves             int
 	turn                  Color
@@ -74,7 +73,6 @@ func (g *Game) Reset() {
 	g.squares = [64]Piece{}
 	g.enPassant = 0
 	g.castling = 0
-	g.ply = 0
 	g.halfMoves = 0
 	g.fullMoves = 0
 	g.turn = WHITE
@@ -116,7 +114,6 @@ func CloneGame(g *Game) Game {
 		occupied:              g.occupied,
 		enPassant:             g.enPassant,
 		castling:              g.castling,
-		ply:                   g.ply,
 		halfMoves:             g.halfMoves,
 		fullMoves:             g.fullMoves,
 		turn:                  g.turn,

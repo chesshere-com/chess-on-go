@@ -33,15 +33,7 @@ var STRING_TO_KIND = map[string]uint{
 	"p": PAWN, "n": KNIGHT, "b": BISHOP, "r": ROOK, "q": QUEEN, "k": KING,
 }
 
-// RUNE_TO_FILE maps file runes to zero-based file indexes.
-//
-// Compatibility: prefer ParseSquare or Square.File in new code.
-var RUNE_TO_FILE = map[rune]int{'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
 
-// RUNE_TO_RANK maps rank runes to zero-based rank indexes.
-//
-// Compatibility: prefer ParseSquare or Square.Rank in new code.
-var RUNE_TO_RANK = map[rune]int{'1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
 
 // FILE_TO_STRING maps zero-based file indexes to file strings.
 //
@@ -264,23 +256,22 @@ func (g *Game) ToFEN() string {
 	var pieces, turn, castling, enPassant string
 
 	pieces = ""
-	var i, emptyCount int = 0, 0
 	for rank := 0; rank < 8; rank++ {
+		emptyCount := 0
 		for file := 0; file < 8; file++ {
-			if g.squares[i] != EMPTY {
-				pieces += string(PIECE_TO_RUNE[g.squares[i]])
-				i++
-				continue
-			}
-			for emptyCount = 0; file < 8 && g.squares[i] == EMPTY; {
+			idx := rank*8 + file
+			if g.squares[idx] != EMPTY {
+				if emptyCount > 0 {
+					pieces += strconv.Itoa(emptyCount)
+					emptyCount = 0
+				}
+				pieces += string(PIECE_TO_RUNE[g.squares[idx]])
+			} else {
 				emptyCount++
-				i++
-				file++
 			}
-			if emptyCount > 0 {
-				pieces += strconv.Itoa(emptyCount)
-				file--
-			}
+		}
+		if emptyCount > 0 {
+			pieces += strconv.Itoa(emptyCount)
 		}
 		if rank < 7 {
 			pieces += "/"
