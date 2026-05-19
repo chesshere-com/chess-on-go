@@ -1,0 +1,83 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	25692344	        46.28 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	25641025	        46.36 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	25878009	        46.87 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	25565320	        47.43 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18         	25348497	        46.67 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	13596243	        88.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	13486940	        88.99 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	13398370	        88.76 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	13558708	        89.10 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	13526631	        88.51 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	28451918	        42.06 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	28334212	        42.74 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	28187899	        42.12 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	28702268	        42.38 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1-18                                                	28044235	        42.88 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	25278102	        46.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	25615232	        47.20 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	25540269	        47.14 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	25389838	        47.02 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01-18                  	25503855	        47.44 ns/op	       0 B/op	       0 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	   27718	     42961 ns/op	 207.21 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	   27841	     42955 ns/op	 207.24 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	   27932	     42792 ns/op	 208.03 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	   28202	     43189 ns/op	 206.12 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/InitialDepth3-18                                                                             	   27740	     43035 ns/op	 206.85 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	    1538	    795003 ns/op	 248.15 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	    1441	    787532 ns/op	 250.51 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	    1503	    794366 ns/op	 248.35 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	    1545	    789083 ns/op	 250.01 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth4-18                                                                             	    1525	    785047 ns/op	 251.30 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	      62	  18825024 ns/op	 258.46 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	      63	  18790850 ns/op	 258.94 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	      62	  18894200 ns/op	 257.52 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	      62	  18703253 ns/op	 260.15 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/InitialDepth5-18                                                                             	      63	  18841066 ns/op	 258.24 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	    4270	    293156 ns/op	 333.82 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	    4143	    293831 ns/op	 333.06 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	    4089	    290742 ns/op	 336.59 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	    4189	    291998 ns/op	 335.15 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/Position2Depth3-18                                                                           	    4142	    290529 ns/op	 336.84 MB/s	     144 B/op	       2 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	      90	  13282626 ns/op	 307.59 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	      91	  13302281 ns/op	 307.14 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	      91	  13354302 ns/op	 305.94 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	      88	  13351909 ns/op	 305.99 MB/s	     336 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4-18                                                                           	      90	  13303011 ns/op	 307.12 MB/s	     336 B/op	       3 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	42572691	        29.80 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	39935769	        29.63 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	39983173	        29.70 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	39401318	        30.12 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18     	38595704	        30.29 ns/op	     160 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	22313628	        53.75 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	19413522	        54.53 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	22399864	        53.08 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	22466457	        53.44 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareNotnilChessCachedValidMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	22326913	        53.37 ns/op	     384 B/op	       1 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	 2684593	       440.3 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	 2679583	       444.7 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	 2713771	       454.3 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	 2618088	       452.9 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18        	 2668149	       449.9 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   74974	     16117 ns/op	    8362 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   73434	     16163 ns/op	    8362 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   74366	     16172 ns/op	    8362 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   73798	     16318 ns/op	    8362 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1-18       	   74250	     16107 ns/op	    8362 B/op	     208 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	 2036064	       555.1 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	 2171812	       553.0 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	 2158668	       549.7 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	 2121980	       555.9 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/chess-on-go/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18         	 2163848	       550.9 ns/op	    1216 B/op	       3 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   69637	     17372 ns/op	    8746 B/op	     210 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   69298	     17555 ns/op	    8746 B/op	     210 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   69561	     17357 ns/op	    8746 B/op	     210 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   69367	     17382 ns/op	    8746 B/op	     210 allocs/op
+BenchmarkCompareLoadFENAndGenerateLegalMoves/notnil-chess/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1-18        	   69423	     17306 ns/op	    8746 B/op	     210 allocs/op
+PASS
+ok  	github.com/chesshere-com/chess-on-go	112.200s
+PASS
+ok  	github.com/chesshere-com/chess-on-go/cmd/chessongo	0.278s
