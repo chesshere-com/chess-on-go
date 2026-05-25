@@ -51,6 +51,18 @@ func TestChess960ParseUCIRecognizesCastlingToRookSquare(t *testing.T) {
 	require.Equal(t, Piece(W_ROOK), g.squares[COORDS_TO_SQUARE["f1"]])
 }
 
+func TestChess960ParseUCINonCastlingDoesNotRegenerateLegalMoves(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("6k1/8/8/8/8/8/4P3/6KR w H - 0 1", VariantChess960)
+	require.NoError(t, err)
+	g.legalMoves = nil
+
+	move, err := g.ParseMoveUCI("e2e3")
+
+	require.NoError(t, err)
+	require.Equal(t, NewMove(COORDS_TO_SQUARE["e2"], COORDS_TO_SQUARE["e3"], EMPTY), move)
+	require.Nil(t, g.legalMoves)
+}
+
 func TestTryMoveSAN(t *testing.T) {
 	g := NewGame()
 

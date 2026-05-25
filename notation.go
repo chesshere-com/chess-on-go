@@ -29,14 +29,24 @@ func (g *Game) ParseMoveUCI(uci string) (Move, error) {
 		return move, err
 	}
 
-	g.GenerateLegalMoves()
-	for _, legal := range g.legalMoves {
-		if !legal.IsCastlingMove() || legal.From() != move.From() {
+	if g.squares[move.From()].Kind() != KING || g.squares[move.From()].Color() != g.turn {
+		return move, nil
+	}
+	rookPiece := Piece(W_ROOK)
+	if g.turn == BLACK {
+		rookPiece = B_ROOK
+	}
+	if g.squares[move.To()] != rookPiece {
+		return move, nil
+	}
+
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if (g.castling&right) == 0 || g.castlingRookFrom[right] != move.To() {
 			continue
 		}
-		spec, ok := g.castlingSpecForMove(legal)
-		if ok && spec.rookFrom == move.To() {
-			return legal, nil
+		spec, ok := g.castlingSpec(right)
+		if ok && spec.color == g.turn && spec.kingFrom == move.From() {
+			return NewCastlingMove(spec.kingFrom, spec.kingTo), nil
 		}
 	}
 	return move, nil
