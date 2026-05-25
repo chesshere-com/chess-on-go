@@ -30,6 +30,20 @@ func TestNewGameFromFENWithChess960VariantRecordsVariant(t *testing.T) {
 	require.Equal(t, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1", g.FEN())
 }
 
+func TestNewChess960Game(t *testing.T) {
+	g, err := NewChess960Game(518)
+
+	require.NoError(t, err)
+	require.Equal(t, VariantChess960, g.Variant())
+	require.Equal(t, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1", g.FEN())
+	require.Len(t, g.LegalMovesList(), 20)
+}
+
+func TestNewChess960GameRejectsInvalidPosition(t *testing.T) {
+	_, err := NewChess960Game(960)
+	require.Error(t, err)
+}
+
 func TestClonePreservesVariant(t *testing.T) {
 	g, err := NewGameFromFENWithVariant(STARTING_POSITION_FEN, VariantChess960)
 	require.NoError(t, err)
