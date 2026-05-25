@@ -39,7 +39,7 @@ func threeCheckStatus(g *Game, status *computedStatus) {
 }
 
 func threeCheckHashExtra(g *Game) uint64 {
-	return uint64(g.variantState.checksGiven[whiteStateIndex])<<8 |
+	return uint64(g.variantState.checksGiven[whiteStateIndex])<<2 |
 		uint64(g.variantState.checksGiven[blackStateIndex])
 }
 

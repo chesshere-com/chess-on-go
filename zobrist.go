@@ -9,7 +9,7 @@ var (
 	zobristPiece           [12][64]uint64
 	zobristCastling        [16]uint64
 	zobristVariant         [8]uint64
-	zobristVariantState    [16]uint64
+	zobristVariantState    [256]uint64
 	zobristCastlingRook    [16][64]uint64
 	zobristEnPassant       [8]uint64
 	zobristTurnToMove      uint64
@@ -80,7 +80,7 @@ func (g *Game) computeZobrist() uint64 {
 		h ^= zobristVariant[g.variant]
 	}
 	if extra := g.rules().hashExtra; extra != nil {
-		h ^= zobristVariantState[extra(g)&0xF]
+		h ^= zobristVariantState[extra(g)&0xFF]
 	}
 	if g.variant != VariantStandard {
 		for _, right := range []int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
