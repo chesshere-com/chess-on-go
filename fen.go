@@ -129,32 +129,8 @@ func (g *Game) loadFEN(fen string, variant Variant) error {
 		return invalidFENField(FENFieldSideToMove, "invalid side to move")
 	}
 
-	if parts[2] == "-" {
-		parsed.castling = 0
-	} else {
-		seen := [256]bool{}
-		for i := 0; i < len(parts[2]); i++ {
-			c := parts[2][i]
-			if seen[c] {
-				return invalidFENField(FENFieldCastling, "duplicate castling right")
-			}
-			seen[c] = true
-			switch c {
-			case 'K':
-				parsed.castling |= CASTLE_WKS
-			case 'Q':
-				parsed.castling |= CASTLE_WQS
-			case 'k':
-				parsed.castling |= CASTLE_BKS
-			case 'q':
-				parsed.castling |= CASTLE_BQS
-			default:
-				return invalidFENField(FENFieldCastling, "invalid castling right")
-			}
-		}
-		if !parsed.castlingRightsMatchBoard() {
-			return invalidFENField(FENFieldCastling, "castling rights do not match board")
-		}
+	if err := parsed.parseFENCastlingField(parts[2]); err != nil {
+		return err
 	}
 
 	if parts[3] == "-" {
@@ -289,22 +265,7 @@ func (g *Game) ToFEN() string {
 		turn = "b"
 	}
 
-	castling = ""
-	if (g.castling & CASTLE_WKS) > 0 {
-		castling += "K"
-	}
-	if (g.castling & CASTLE_WQS) > 0 {
-		castling += "Q"
-	}
-	if (g.castling & CASTLE_BKS) > 0 {
-		castling += "k"
-	}
-	if (g.castling & CASTLE_BQS) > 0 {
-		castling += "q"
-	}
-	if len(castling) == 0 {
-		castling = "-"
-	}
+	castling = g.fenCastlingField()
 
 	if g.enPassant == 0 {
 		enPassant = "-"
@@ -335,18 +296,238 @@ func parseFENNumber(token string) (int, error) {
 	return value, nil
 }
 
+func (g *Game) parseFENCastlingField(field string) error {
+	g.castling = 0
+	if field == "-" {
+		return nil
+	}
+	if field == "" {
+		return invalidFENField(FENFieldCastling, "invalid castling right")
+	}
+
+	seenChars := [256]bool{}
+	seenRights := [16]bool{}
+	for i := 0; i < len(field); i++ {
+		c := field[i]
+		if seenChars[c] {
+			return invalidFENField(FENFieldCastling, "duplicate castling right")
+		}
+		seenChars[c] = true
+
+		right, rookFrom, err := g.parseFENCastlingRight(c)
+		if err != nil {
+			return err
+		}
+		if right <= 0 || right >= len(seenRights) || seenRights[right] {
+			return invalidFENField(FENFieldCastling, "duplicate castling right")
+		}
+		seenRights[right] = true
+		g.castling |= right
+		g.castlingRookFrom[right] = rookFrom
+	}
+
+	if !g.castlingRightsMatchBoard() {
+		return invalidFENField(FENFieldCastling, "castling rights do not match board")
+	}
+	return nil
+}
+
+func (g *Game) parseFENCastlingRight(c byte) (int, Square, error) {
+	switch c {
+	case 'K':
+		if g.variant == VariantChess960 {
+			return g.parseChess960KQCastlingRight(c)
+		}
+		return CASTLE_WKS, WKS_ROOK_ORIGINAL_SQUARE, nil
+	case 'Q':
+		if g.variant == VariantChess960 {
+			return g.parseChess960KQCastlingRight(c)
+		}
+		return CASTLE_WQS, WQS_ROOK_ORIGINAL_SQUARE, nil
+	case 'k':
+		if g.variant == VariantChess960 {
+			return g.parseChess960KQCastlingRight(c)
+		}
+		return CASTLE_BKS, BKS_ROOK_ORIGINAL_SQUARE, nil
+	case 'q':
+		if g.variant == VariantChess960 {
+			return g.parseChess960KQCastlingRight(c)
+		}
+		return CASTLE_BQS, BQS_ROOK_ORIGINAL_SQUARE, nil
+	}
+
+	if g.variant != VariantChess960 {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "invalid castling right")
+	}
+	if c >= 'A' && c <= 'H' {
+		return g.parseChess960FileCastlingRight(WHITE, int(c-'A'))
+	}
+	if c >= 'a' && c <= 'h' {
+		return g.parseChess960FileCastlingRight(BLACK, int(c-'a'))
+	}
+	return 0, noSquare, invalidFENField(FENFieldCastling, "invalid castling right")
+}
+
+func (g *Game) parseChess960FileCastlingRight(color Color, rookFile int) (int, Square, error) {
+	king := g.kingSquare(color)
+	if !king.Valid() {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "castling rights do not match board")
+	}
+
+	rookFrom := squareOnBackRank(color, rookFile)
+	rookPiece := Piece(W_ROOK)
+	if color == BLACK {
+		rookPiece = B_ROOK
+	}
+	if g.squares[rookFrom] != rookPiece {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "castling rights do not match board")
+	}
+	if rookFile == king.File() {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "invalid castling right")
+	}
+
+	return castlingRightFor(color, rookFile > king.File()), rookFrom, nil
+}
+
+func (g *Game) parseChess960KQCastlingRight(c byte) (int, Square, error) {
+	color := Color(WHITE)
+	if c == 'k' || c == 'q' {
+		color = BLACK
+	}
+	kingside := c == 'K' || c == 'k'
+
+	king := g.kingSquare(color)
+	if !king.Valid() {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "castling rights do not match board")
+	}
+	rookFrom, ok := g.unambiguousChess960RookForSide(color, king.File(), kingside)
+	if !ok {
+		return 0, noSquare, invalidFENField(FENFieldCastling, "invalid castling right")
+	}
+	return castlingRightFor(color, kingside), rookFrom, nil
+}
+
+func (g *Game) unambiguousChess960RookForSide(color Color, kingFile int, kingside bool) (Square, bool) {
+	rookPiece := Piece(W_ROOK)
+	if color == BLACK {
+		rookPiece = B_ROOK
+	}
+
+	found := noSquare
+	for file := 0; file < 8; file++ {
+		if kingside && file <= kingFile {
+			continue
+		}
+		if !kingside && file >= kingFile {
+			continue
+		}
+		sq := squareOnBackRank(color, file)
+		if g.squares[sq] != rookPiece {
+			continue
+		}
+		if found.Valid() {
+			return noSquare, false
+		}
+		found = sq
+	}
+	return found, found.Valid()
+}
+
+func (g *Game) kingSquare(color Color) Square {
+	kingPiece := Piece(W_KING)
+	if color == BLACK {
+		kingPiece = B_KING
+	}
+	rank := backRankFor(color)
+	for file := 0; file < 8; file++ {
+		sq := squareOnBackRank(color, file)
+		if g.squares[sq] == kingPiece && sq.Rank() == rank {
+			return sq
+		}
+	}
+	return noSquare
+}
+
+func (g *Game) fenCastlingField() string {
+	if g.castling == 0 {
+		return "-"
+	}
+
+	if g.variant != VariantChess960 {
+		out := make([]byte, 0, 4)
+		if (g.castling & CASTLE_WKS) > 0 {
+			out = append(out, 'K')
+		}
+		if (g.castling & CASTLE_WQS) > 0 {
+			out = append(out, 'Q')
+		}
+		if (g.castling & CASTLE_BKS) > 0 {
+			out = append(out, 'k')
+		}
+		if (g.castling & CASTLE_BQS) > 0 {
+			out = append(out, 'q')
+		}
+		return string(out)
+	}
+
+	out := make([]byte, 0, 4)
+	for _, right := range []int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if (g.castling & right) == 0 {
+			continue
+		}
+		rookFrom := g.castlingRookFrom[right]
+		if !rookFrom.Valid() {
+			continue
+		}
+		letter := byte('A' + rookFrom.File())
+		if castlingRightColor(right) == BLACK {
+			letter += 'a' - 'A'
+		}
+		out = append(out, letter)
+	}
+	if len(out) == 0 {
+		return "-"
+	}
+	return string(out)
+}
+
 func (g *Game) castlingRightsMatchBoard() bool {
-	if (g.castling&CASTLE_WKS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WKS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
-		return false
+	if g.variant == VariantStandard {
+		if (g.castling&CASTLE_WKS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WKS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
+			return false
+		}
+		if (g.castling&CASTLE_WQS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WQS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
+			return false
+		}
+		if (g.castling&CASTLE_BKS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BKS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
+			return false
+		}
+		if (g.castling&CASTLE_BQS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BQS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
+			return false
+		}
+		return true
 	}
-	if (g.castling&CASTLE_WQS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WQS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
-		return false
-	}
-	if (g.castling&CASTLE_BKS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BKS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
-		return false
-	}
-	if (g.castling&CASTLE_BQS) > 0 && (g.squares[B_KING_INIT_SQUARE] != B_KING || g.squares[BQS_ROOK_ORIGINAL_SQUARE] != B_ROOK) {
-		return false
+
+	for _, right := range []int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if (g.castling & right) == 0 {
+			continue
+		}
+		color := castlingRightColor(right)
+		king := g.kingSquare(color)
+		rookFrom := g.castlingRookFrom[right]
+		if !king.Valid() || !rookFrom.Valid() || rookFrom.Rank() != backRankFor(color) {
+			return false
+		}
+		kingPiece, rookPiece := Piece(W_KING), Piece(W_ROOK)
+		if color == BLACK {
+			kingPiece, rookPiece = B_KING, B_ROOK
+		}
+		if g.squares[king] != kingPiece {
+			return false
+		}
+		if g.squares[rookFrom] != rookPiece {
+			return false
+		}
 	}
 	return true
 }
