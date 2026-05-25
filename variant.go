@@ -21,8 +21,6 @@ const (
 
 type variantState struct {
 	checksGiven [2]uint8
-	pockets     [2][7]uint8
-	promoted    Bitboard
 }
 
 func (v Variant) String() string {
