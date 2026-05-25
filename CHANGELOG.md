@@ -7,6 +7,8 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 
 ## Unreleased
 
+## v0.22.0 - 2026-05-25
+
 - Added explicit Chess960 support with position generation, Shredder-FEN
   castling rights, legal castling generation/execution/undo, notation/PGN
   integration, and variant-aware snapshots/hashes.

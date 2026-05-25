@@ -15,6 +15,9 @@ The preferred public API is method-based:
 - `Game.PositionKey`
 - `NewGameFromFENWithVariant`, `LoadFENWithVariant`
 - `NewChess960Game`, `Chess960StartingFEN`, `Chess960BackRank`
+- `VariantStandard`, `VariantChess960`, `VariantKingOfTheHill`,
+  `VariantThreeCheck`
+- `GameStatusVariantWin`
 
 The `Game` struct still has exported fields for older callers. Those fields are
 compatibility surface, but they should be treated as read-only implementation
@@ -53,6 +56,9 @@ Variant-aware FEN and PGN behavior is part of the public compatibility surface:
 - Three-check FEN requires the seventh `+W+B` check-counter field.
 - King of the Hill and Three-check use `GameStatusVariantWin` and `Winner()`
   for variant wins.
+- `NewGame`, `LoadFEN`, and `NewGameFromFEN` remain standard-only defaults.
+- Reserved future variant constants may exist before implementation, but they
+  are not considered supported until `LoadFENWithVariant` accepts them.
 
 `MarshalBinary` and `UnmarshalBinary` include the active variant and variant
 state. Binary payloads are same-version persistence data, not a long-term stable

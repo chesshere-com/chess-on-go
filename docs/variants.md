@@ -12,6 +12,10 @@ through explicit variant APIs so existing `NewGame`, `LoadFEN`, and
 - `VariantThreeCheck`: standard movement plus checks-given counters and
   third-check wins.
 
+The package also reserves enum values for future variants such as Atomic,
+Antichess, Horde, and Crazyhouse. Those variants are not implemented yet and
+are rejected by `LoadFENWithVariant` and `NewGameFromFENWithVariant`.
+
 ## API
 
 Use `Variant()` to inspect a game:
@@ -33,6 +37,9 @@ game, err = chessongo.NewGameFromFENWithVariant(
 err = game.LoadFENWithVariant(fen, chessongo.VariantThreeCheck)
 ```
 
+`NewGame`, `LoadFEN`, and `NewGameFromFEN` always use `VariantStandard`.
+Callers must opt in to a variant each time they load a variant-specific FEN.
+
 Variant wins are reported with `GameStatusVariantWin`. Use `Winner()` to get
 the winning color:
 
@@ -43,6 +50,10 @@ if game.Status() == chessongo.GameStatusVariantWin {
 ```
 
 `Game.Snapshot()` includes the active `Variant`.
+
+`PositionKey()` includes the active variant, Chess960 castling rook origins,
+and Three-check counters. Positions that have identical piece placement but
+different variant state therefore hash differently.
 
 ## Chess960
 
@@ -181,6 +192,10 @@ root package.
 
 This avoids duplicating the standard chess engine while still keeping variant
 rules physically separate.
+
+Standard chess remains the default path. Variant hooks are added only where a
+rule difference exists, which keeps normal move generation and validation shared
+and reduces the chance of standard chess drifting from variant behavior.
 
 ## Adding Another Variant
 

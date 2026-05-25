@@ -18,6 +18,7 @@ This package powers [www.chesshere.com](https://www.chesshere.com).
   and `perft`.
 - Check, checkmate, stalemate, en passant, castling, promotion, insufficient
   material, repetition, and 50/75-move-rule handling.
+- Opt-in Chess960, King of the Hill, and Three-check variant support.
 - Read-only public accessors, snapshots, and draw-state helpers.
 - Search/perft helpers that avoid game-status bookkeeping overhead.
 - Static exchange evaluation via `Game.SEE(from, to)` for material-only swap analysis on a target square.
@@ -71,6 +72,7 @@ Use these stable APIs for normal integration work:
 
 - `FEN`, `SideToMove`, `HalfMoveClock`, `FullMoveNumber`, `Status`, and
   `IsTerminal` for game metadata.
+- `Variant` and `Winner` for variant-aware integrations.
 - `Snapshot` for a defensive value copy of the current public game state.
 - `BoardView`, `PieceAt`, `Board`, `Pieces`, `PiecesOfKind`,
   `OccupiedSquares`, `EnPassantSquare`, and `CastlingRights` for board
@@ -241,6 +243,9 @@ threeCheck, err := chessongo.NewGameFromFENWithVariant(threeCheckFEN, chessongo.
 Chess960 FEN export uses Shredder-FEN castling file letters so rook origins are
 not lost. Three-check FEN uses a seventh `+W+B` field for checks given, such as
 `+0+0`.
+
+See [docs/variants.md](docs/variants.md) for variant-specific FEN, PGN,
+status, hashing, and binary serialization notes.
 
 Covered rule areas include:
 
