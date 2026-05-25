@@ -223,8 +223,17 @@ go run ./cmd/chessongo perft -depth 2 "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
 
 ## Supported Rules
 
-The package currently targets standard chess. Chess960 castling rules are not
-implemented.
+The package supports standard chess by default and Chess960 through explicit
+variant constructors/loading APIs:
+
+```go
+game, err := chessongo.NewChess960Game(518)
+fen, err := chessongo.Chess960StartingFEN(0)
+game, err = chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantChess960)
+```
+
+Chess960 FEN export uses Shredder-FEN castling file letters so rook origins are
+not lost.
 
 Covered rule areas include:
 
