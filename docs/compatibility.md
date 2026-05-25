@@ -7,11 +7,14 @@ This document describes the intended public surface for `chess-on-go`.
 The preferred public API is method-based:
 
 - `Game.FEN`, `Game.SideToMove`, `Game.Status`, `Game.IsTerminal`
+- `Game.Variant`, `Game.Winner`
 - `Game.BoardView`, `Game.Snapshot`, `Game.PieceAt`, `Game.Pieces`
 - `Game.LegalMovesInto`, `Game.TryMoveUCI`, `Game.TryMoveSAN`
 - `Game.DrawStatus`, `Game.CanClaimFiftyMoveRule`,
   `Game.CanClaimThreefoldRepetition`
 - `Game.PositionKey`
+- `NewGameFromFENWithVariant`, `LoadFENWithVariant`
+- `NewChess960Game`, `Chess960StartingFEN`, `Chess960BackRank`
 
 The `Game` struct still has exported fields for older callers. Those fields are
 compatibility surface, but they should be treated as read-only implementation
@@ -38,6 +41,23 @@ Prefer the documented helper APIs when writing new code:
 
 These low-level values may remain exported through v1, but callers should avoid
 depending on their mutability or exact representation.
+
+## Variant Compatibility
+
+Standard chess remains the default for `NewGame`, `LoadFEN`, and
+`NewGameFromFEN`. Variants are opt-in through `Variant` APIs.
+
+Variant-aware FEN and PGN behavior is part of the public compatibility surface:
+
+- Chess960 FEN uses Shredder-FEN castling file letters on export.
+- Three-check FEN requires the seventh `+W+B` check-counter field.
+- King of the Hill and Three-check use `GameStatusVariantWin` and `Winner()`
+  for variant wins.
+
+`MarshalBinary` and `UnmarshalBinary` include the active variant and variant
+state. Binary payloads are same-version persistence data, not a long-term stable
+wire format. Use FEN or PGN when data must survive package upgrades or
+interoperate with other tools.
 
 ## Versioning
 
