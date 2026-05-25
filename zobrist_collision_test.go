@@ -67,6 +67,27 @@ func TestZobristMutations(t *testing.T) {
 	require.NotEqual(t, hEmptySq, hWithRook, "Placing a piece must change the hash")
 }
 
+func TestZobristDistinguishesVariantCastlingMetadata(t *testing.T) {
+	standard := NewGame()
+	chess960, err := NewChess960Game(518)
+	require.NoError(t, err)
+
+	require.NotEqual(t, standard.PositionKey(), chess960.PositionKey())
+}
+
+func TestZobristCastlingCollisionDistinguishesChess960RookOrigin(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("6k1/8/8/8/8/8/8/6KR w H - 0 1", VariantChess960)
+	require.NoError(t, err)
+
+	mutated := g.Clone()
+	// Same board and castling bitmask, but different Chess960 rook-origin metadata.
+	mutated.castlingRookFrom[CASTLE_WKS] = COORDS_TO_SQUARE["f1"]
+
+	require.Equal(t, g.squares, mutated.squares)
+	require.Equal(t, g.castling, mutated.castling)
+	require.NotEqual(t, g.computeZobrist(), mutated.computeZobrist())
+}
+
 // TestZobristCollisions generates a large set of unique positions via random game
 // playouts and asserts that no two unique positions share the same Zobrist hash.
 func TestZobristCollisions(t *testing.T) {

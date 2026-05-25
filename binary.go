@@ -6,17 +6,20 @@ import (
 )
 
 const (
-	binaryMagic            = "COG1"
-	binaryHeaderSize       = 4
-	binaryFixedPayloadSize = 79
-	binaryHistoryEntrySize = 12
+	binaryMagicV1            = "COG1"
+	binaryMagicV2            = "COG2"
+	binaryHeaderSize         = 4
+	binaryFixedPayloadSizeV1 = 79
+	binaryVariantPayloadSize = 19
+	binaryFixedPayloadSizeV2 = binaryFixedPayloadSizeV1 + binaryVariantPayloadSize
+	binaryHistoryEntrySize   = 12
 )
 
 // MarshalBinary encodes the board state into a byte slice.
 func (g *Game) MarshalBinary() ([]byte, error) {
-	buf := make([]byte, binaryHeaderSize+binaryFixedPayloadSize+len(g.positionHistory)*binaryHistoryEntrySize)
+	buf := make([]byte, binaryHeaderSize+binaryFixedPayloadSizeV2+len(g.positionHistory)*binaryHistoryEntrySize)
 
-	copy(buf[0:binaryHeaderSize], binaryMagic)
+	copy(buf[0:binaryHeaderSize], binaryMagicV2)
 	offset := binaryHeaderSize
 	for i, piece := range g.squares {
 		buf[offset+i] = uint8(piece)
@@ -30,6 +33,15 @@ func (g *Game) MarshalBinary() ([]byte, error) {
 	binary.LittleEndian.PutUint32(buf[offset+11:offset+15], uint32(len(g.positionHistory)))
 
 	offset += 15
+	buf[offset] = uint8(g.variant)
+	buf[offset+1] = g.variantState.checksGiven[whiteStateIndex]
+	buf[offset+2] = g.variantState.checksGiven[blackStateIndex]
+	offset += 3
+	for i := range g.castlingRookFrom {
+		buf[offset+i] = uint8(g.castlingRookFrom[i])
+	}
+	offset += len(g.castlingRookFrom)
+
 	for hash, count := range g.positionHistory {
 		binary.LittleEndian.PutUint64(buf[offset:offset+8], hash)
 		binary.LittleEndian.PutUint32(buf[offset+8:offset+12], uint32(count))
@@ -41,11 +53,20 @@ func (g *Game) MarshalBinary() ([]byte, error) {
 
 // UnmarshalBinary decodes the board state from a byte slice.
 func (g *Game) UnmarshalBinary(data []byte) error {
-	if len(data) < binaryHeaderSize+binaryFixedPayloadSize {
+	if len(data) < binaryHeaderSize+binaryFixedPayloadSizeV1 {
 		return errors.New("insufficient data for board")
 	}
-	if string(data[0:binaryHeaderSize]) != binaryMagic {
+
+	magic := string(data[0:binaryHeaderSize])
+	if magic != binaryMagicV1 && magic != binaryMagicV2 {
 		return errors.New("invalid binary board format")
+	}
+	fixedPayloadSize := binaryFixedPayloadSizeV1
+	if magic == binaryMagicV2 {
+		fixedPayloadSize = binaryFixedPayloadSizeV2
+		if len(data) < binaryHeaderSize+fixedPayloadSize {
+			return errors.New("insufficient data for board")
+		}
 	}
 
 	decoded := Game{}
@@ -68,7 +89,7 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 		return errors.New("invalid turn in binary board")
 	}
 	decoded.castling = int(data[offset+1])
-	if decoded.castling < 0 || decoded.castling > 0xF || !decoded.castlingRightsMatchBoard() {
+	if decoded.castling < 0 || decoded.castling > 0xF {
 		return errors.New("invalid castling rights in binary board")
 	}
 	decoded.enPassant = Square(data[offset+2])
@@ -82,9 +103,37 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 	}
 
 	count := int(binary.LittleEndian.Uint32(data[offset+11 : offset+15]))
-	expectedSize := binaryHeaderSize + binaryFixedPayloadSize + count*binaryHistoryEntrySize
+	expectedSize := binaryHeaderSize + fixedPayloadSize + count*binaryHistoryEntrySize
 	if len(data) != expectedSize {
 		return errors.New("insufficient data for position history")
+	}
+
+	offset += 15
+	if magic == binaryMagicV2 {
+		decoded.variant = Variant(data[offset])
+		if !validVariant(decoded.variant) {
+			return errors.New("unsupported variant in binary board")
+		}
+		decoded.variantState.checksGiven[whiteStateIndex] = data[offset+1]
+		decoded.variantState.checksGiven[blackStateIndex] = data[offset+2]
+		if decoded.variant == VariantThreeCheck &&
+			(decoded.variantState.checksGiven[whiteStateIndex] > 3 ||
+				decoded.variantState.checksGiven[blackStateIndex] > 3) {
+			return errors.New("invalid three-check counter in binary board")
+		}
+		offset += 3
+		for i := range decoded.castlingRookFrom {
+			decoded.castlingRookFrom[i] = Square(data[offset+i])
+		}
+		offset += len(decoded.castlingRookFrom)
+	} else {
+		decoded.variant = VariantStandard
+		decoded.variantState = variantState{}
+		decoded.castlingRookFrom = defaultCastlingRookFrom()
+	}
+
+	if !decoded.castlingRightsMatchBoard() {
+		return errors.New("invalid castling rights in binary board")
 	}
 
 	if decoded.whites[KING].NumberOfSetBits() != 1 || decoded.blacks[KING].NumberOfSetBits() != 1 {
@@ -95,7 +144,6 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 	}
 
 	decoded.positionHistory = make(map[uint64]int, count)
-	offset += 15
 	for i := 0; i < count; i++ {
 		hash := binary.LittleEndian.Uint64(data[offset : offset+8])
 		c := int(binary.LittleEndian.Uint32(data[offset+8 : offset+12]))

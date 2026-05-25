@@ -5,6 +5,14 @@ All notable user-visible changes to this package should be documented here.
 Releases use semantic version tags in the form `v*.*.*`, for example
 `v0.1.0`.
 
+## Unreleased
+
+- Added explicit Chess960 support with position generation, Shredder-FEN
+  castling rights, legal castling generation/execution/undo, notation/PGN
+  integration, and variant-aware snapshots/hashes.
+- Added King of the Hill and Three-check variants with variant-aware status,
+  winners, FEN/PGN handling, hashes, undo, and binary serialization.
+
 ## v0.21.1 - 2026-05-15
 
 - Fix `parseFENNumber` overflow: halfmove/fullmove tokens with enough digits

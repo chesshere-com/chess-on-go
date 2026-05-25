@@ -24,7 +24,32 @@ func (g *Game) TryMoveUCI(uci string) error {
 
 // ParseMoveUCI parses a UCI move string into a move request.
 func (g *Game) ParseMoveUCI(uci string) (Move, error) {
-	return NewMoveFromUCI(uci)
+	move, err := NewMoveFromUCI(uci)
+	if err != nil || g.variant != VariantChess960 || move.IsPromotionMove() {
+		return move, err
+	}
+
+	if g.squares[move.From()].Kind() != KING || g.squares[move.From()].Color() != g.turn {
+		return move, nil
+	}
+	rookPiece := Piece(W_ROOK)
+	if g.turn == BLACK {
+		rookPiece = B_ROOK
+	}
+	if g.squares[move.To()] != rookPiece {
+		return move, nil
+	}
+
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if (g.castling&right) == 0 || g.castlingRookFrom[right] != move.To() {
+			continue
+		}
+		spec, ok := g.castlingSpec(right)
+		if ok && spec.color == g.turn && spec.kingFrom == move.From() {
+			return NewCastlingMove(spec.kingFrom, spec.kingTo), nil
+		}
+	}
+	return move, nil
 }
 
 // TryMoveSAN parses and applies a legal move in standard algebraic notation.

@@ -18,16 +18,14 @@ func (g *Game) ComputeIsCheck() bool {
 // Checks whether the given move is possible or not
 func (g *Game) CanMove(m Move) bool {
 	if m.IsCastlingMove() {
-		var inBetweenSq Square
-		if m.To() == WKS_KING_TO_SQUARE || m.To() == BKS_KING_TO_SQUARE {
-			inBetweenSq = m.From() + 1
-		} else if m.To() == WQS_KING_TO_SQUARE || m.To() == BQS_KING_TO_SQUARE {
-			inBetweenSq = m.From() - 1
-		}
-		inBetweenMove := NewMove(m.From(), inBetweenSq, EMPTY)
-		if g.isCheck || g.WillMoveCauseCheck(inBetweenMove) {
+		if g.isCheck {
 			return false
 		}
+		spec, ok := g.castlingSpecForMove(m)
+		if !ok {
+			return false
+		}
+		return g.castlingKingPathIsSafe(spec, oppositeColor(g.turn))
 	}
 	return !g.WillMoveCauseCheck(m)
 }
@@ -134,12 +132,14 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 		}
 	}
 	g.history = append(g.history, GameState{
-		CapturedPiece: capturedPiece,
-		Castling:      g.castling,
-		EnPassant:     g.enPassant,
-		HalfMoves:     g.halfMoves,
-		FullMoves:     g.fullMoves,
-		ZobristHash:   g.zobristHash,
+		CapturedPiece:    capturedPiece,
+		Castling:         g.castling,
+		CastlingRookFrom: g.castlingRookFrom,
+		VariantState:     g.variantState,
+		EnPassant:        g.enPassant,
+		HalfMoves:        g.halfMoves,
+		FullMoves:        g.fullMoves,
+		ZobristHash:      g.zobristHash,
 	})
 
 	if g.ShouldResetHalfMoves(m) {
@@ -162,28 +162,11 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 		}
 	}
 	if kind == ROOK {
-		switch m.From() {
-		case WKS_ROOK_ORIGINAL_SQUARE:
-			g.castling &= ^CASTLE_WKS
-		case WQS_ROOK_ORIGINAL_SQUARE:
-			g.castling &= ^CASTLE_WQS
-		case BKS_ROOK_ORIGINAL_SQUARE:
-			g.castling &= ^CASTLE_BKS
-		case BQS_ROOK_ORIGINAL_SQUARE:
-			g.castling &= ^CASTLE_BQS
-		}
+		g.clearCastlingRightsForRookSquare(m.From())
 	}
 
-	switch m.To() {
-	case WKS_ROOK_ORIGINAL_SQUARE:
-		g.castling &= ^CASTLE_WKS
-	case WQS_ROOK_ORIGINAL_SQUARE:
-		g.castling &= ^CASTLE_WQS
-	case BKS_ROOK_ORIGINAL_SQUARE:
-		g.castling &= ^CASTLE_BKS
-	case BQS_ROOK_ORIGINAL_SQUARE:
-		g.castling &= ^CASTLE_BQS
-	}
+	g.clearCastlingRightsForRookSquare(m.To())
+
 	// enPassant target
 	g.enPassant = 0
 	if kind == PAWN && g.turn == WHITE {
@@ -203,6 +186,10 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 		g.turn = WHITE
 	}
 
+	if hook := g.rules().afterMove; hook != nil {
+		hook(g, m, &g.history[len(g.history)-1])
+	}
+
 	if updatePositionHistory {
 		g.recordPosition()
 	}
@@ -216,6 +203,11 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 }
 
 func (g *Game) justMove(m Move) {
+	if m.IsCastlingMove() {
+		g.justCastle(m)
+		return
+	}
+
 	from := m.From()
 	to := m.To()
 
@@ -269,15 +261,6 @@ func (g *Game) justMove(m Move) {
 			}
 		}
 	}
-	if m.IsCastlingMove() {
-		var rookMove Move
-		if m.To() == WKS_KING_TO_SQUARE || m.To() == BKS_KING_TO_SQUARE {
-			rookMove = NewMove(m.To()+1, m.To()-1, 0)
-		} else if m.To() == WQS_KING_TO_SQUARE || m.To() == BQS_KING_TO_SQUARE {
-			rookMove = NewMove(m.To()-2, m.To()+1, 0)
-		}
-		g.justMove(rookMove)
-	}
 	var promoteTo Piece = m.GetPromotionTo()
 	if promoteTo > 0 {
 		switch g.squares[to].Color() {
@@ -298,6 +281,17 @@ func (g *Game) justMove(m Move) {
 	}
 }
 
+func (g *Game) justCastle(m Move) {
+	spec, ok := g.castlingSpecForMove(m)
+	if !ok {
+		return
+	}
+	g.clearSquare(spec.kingFrom)
+	g.clearSquare(spec.rookFrom)
+	g.addPiece(spec.kingPiece, int(spec.kingTo))
+	g.addPiece(spec.rookPiece, int(spec.rookTo))
+}
+
 // Remove captured piece from opponent's pieces
 func (g *Game) capturePiece(sq Square, captured Piece) {
 	if captured == EMPTY {
@@ -315,9 +309,27 @@ func (g *Game) capturePiece(sq Square, captured Piece) {
 	}
 }
 
+func (g *Game) clearSquare(square Square) {
+	if !square.Valid() {
+		return
+	}
+	piece := g.squares[square]
+	if piece == EMPTY {
+		return
+	}
+	g.capturePiece(square, piece)
+	g.occupied &^= Bitboard(1) << square
+	g.squares[square] = EMPTY
+}
+
 func (g *Game) unmakeMove(m Move, captured Piece) {
 	from := m.From()
 	to := m.To()
+
+	if m.IsCastlingMove() {
+		g.unmakeCastle(m)
+		return
+	}
 
 	movingPieceKind := g.squares[to].Kind()
 	movingColor := g.turn
@@ -382,43 +394,15 @@ func (g *Game) unmakeMove(m Move, captured Piece) {
 			g.addPiece(captured, int(to))
 		}
 	}
+}
 
-	if m.IsCastlingMove() {
-		var rookFrom, rookTo Square
-
-		if m.To() == WKS_KING_TO_SQUARE { // g1
-			rookFrom = 61 // f1
-			rookTo = 63   // h1
-		} else if m.To() == WQS_KING_TO_SQUARE { // c1
-			rookFrom = 59 // d1
-			rookTo = 56   // a1
-		} else if m.To() == BKS_KING_TO_SQUARE { // g8
-			rookFrom = 5 // f8
-			rookTo = 7   // h8
-		} else if m.To() == BQS_KING_TO_SQUARE { // c8
-			rookFrom = 3 // d8
-			rookTo = 0   // a8
-		}
-
-		// Move rook back
-		rFromBB := Bitboard(0x1 << rookFrom)
-		rToBB := Bitboard(0x1 << rookTo)
-
-		if movingColor == WHITE {
-			g.whites[ROOK] &= ^rFromBB
-			g.whites[ROOK] |= rToBB
-			g.whitePieces &= ^rFromBB
-			g.whitePieces |= rToBB
-		} else {
-			g.blacks[ROOK] &= ^rFromBB
-			g.blacks[ROOK] |= rToBB
-			g.blackPieces &= ^rFromBB
-			g.blackPieces |= rToBB
-		}
-		g.occupied &= ^rFromBB
-		g.occupied |= rToBB
-
-		g.squares[rookTo] = g.squares[rookFrom]
-		g.squares[rookFrom] = EMPTY
+func (g *Game) unmakeCastle(m Move) {
+	spec, ok := g.castlingSpecForUndoMove(m, g.turn)
+	if !ok {
+		return
 	}
+	g.clearSquare(spec.kingTo)
+	g.clearSquare(spec.rookTo)
+	g.addPiece(spec.kingPiece, int(spec.kingFrom))
+	g.addPiece(spec.rookPiece, int(spec.rookFrom))
 }

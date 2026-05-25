@@ -8,6 +8,9 @@ var (
 	zobristPieceIndexTable [24]int
 	zobristPiece           [12][64]uint64
 	zobristCastling        [16]uint64
+	zobristVariant         [8]uint64
+	zobristVariantState    [256]uint64
+	zobristCastlingRook    [16][64]uint64
 	zobristEnPassant       [8]uint64
 	zobristTurnToMove      uint64
 )
@@ -42,6 +45,17 @@ func init() {
 		zobristEnPassant[i] = rng.Uint64()
 	}
 	zobristTurnToMove = rng.Uint64()
+	for i := range zobristVariant {
+		zobristVariant[i] = rng.Uint64()
+	}
+	for i := range zobristVariantState {
+		zobristVariantState[i] = rng.Uint64()
+	}
+	for i := 0; i < 16; i++ {
+		for j := 0; j < 64; j++ {
+			zobristCastlingRook[i][j] = rng.Uint64()
+		}
+	}
 }
 
 func zobristPieceIndex(p Piece) int {
@@ -61,6 +75,24 @@ func (g *Game) computeZobrist() uint64 {
 	}
 
 	h ^= zobristCastling[g.castling&0xF]
+
+	if g.variant > VariantStandard && int(g.variant) < len(zobristVariant) {
+		h ^= zobristVariant[g.variant]
+	}
+	if extra := g.rules().hashExtra; extra != nil {
+		h ^= zobristVariantState[extra(g)&0xFF]
+	}
+	if g.variant != VariantStandard {
+		for _, right := range []int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+			if (g.castling & right) == 0 {
+				continue
+			}
+			rookFrom := g.castlingRookFrom[right]
+			if rookFrom.Valid() {
+				h ^= zobristCastlingRook[right][rookFrom]
+			}
+		}
+	}
 
 	if g.enPassant != 0 && g.hasAdjacentPawnForEnPassant() {
 		file := g.enPassant.File()

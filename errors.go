@@ -25,6 +25,7 @@ const (
 	FENFieldEnPassant      FENField = "en passant"
 	FENFieldHalfMoveClock  FENField = "halfmove clock"
 	FENFieldFullMoveNumber FENField = "fullmove number"
+	FENFieldVariantState   FENField = "variant state"
 	FENFieldLegality       FENField = "legality"
 )
 
