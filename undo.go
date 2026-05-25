@@ -1,13 +1,14 @@
 package chessongo
 
 type GameState struct {
-	CapturedPiece Piece
-	Castling      int
-	EnPassant     Square
-	Ply           int
-	HalfMoves     int
-	FullMoves     int
-	ZobristHash   uint64
+	CapturedPiece    Piece
+	Castling         int
+	CastlingRookFrom [16]Square
+	EnPassant        Square
+	Ply              int
+	HalfMoves        int
+	FullMoves        int
+	ZobristHash      uint64
 }
 
 func (g *Game) UndoMove(m Move) {
@@ -48,6 +49,7 @@ func (g *Game) undoMoveInternal(m Move, updatePositionHistory, generateLegalMove
 
 	// Restore simple fields
 	g.castling = state.Castling
+	g.castlingRookFrom = state.CastlingRookFrom
 	g.enPassant = state.EnPassant
 	g.halfMoves = state.HalfMoves
 	g.fullMoves = state.FullMoves

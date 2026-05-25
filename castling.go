@@ -175,6 +175,49 @@ func (g *Game) castlingSpecForMove(m Move) (castlingSpec, bool) {
 	return castlingSpec{}, false
 }
 
+func (g *Game) castlingSpecForUndoMove(m Move, color Color) (castlingSpec, bool) {
+	if !m.IsCastlingMove() {
+		return castlingSpec{}, false
+	}
+	right := castlingRightForMoveDestination(color, m.To())
+	if right == 0 {
+		return castlingSpec{}, false
+	}
+	kingside := castlingRightIsKingside(right)
+	kingTo, rookTo := castlingFinalSquares(color, kingside)
+	rookFrom := g.castlingRookFrom[right]
+	if g.variant != VariantChess960 {
+		switch right {
+		case CASTLE_WKS:
+			rookFrom = WKS_ROOK_ORIGINAL_SQUARE
+		case CASTLE_WQS:
+			rookFrom = WQS_ROOK_ORIGINAL_SQUARE
+		case CASTLE_BKS:
+			rookFrom = BKS_ROOK_ORIGINAL_SQUARE
+		case CASTLE_BQS:
+			rookFrom = BQS_ROOK_ORIGINAL_SQUARE
+		}
+	}
+	if !m.From().Valid() || !rookFrom.Valid() {
+		return castlingSpec{}, false
+	}
+	spec := castlingSpec{
+		color:     color,
+		right:     right,
+		kingFrom:  m.From(),
+		kingTo:    kingTo,
+		rookFrom:  rookFrom,
+		rookTo:    rookTo,
+		kingPiece: W_KING,
+		rookPiece: W_ROOK,
+	}
+	if color == BLACK {
+		spec.kingPiece = B_KING
+		spec.rookPiece = B_ROOK
+	}
+	return spec, true
+}
+
 func castlingRightForMoveDestination(color Color, to Square) int {
 	kingsideKingTo, _ := castlingFinalSquares(color, true)
 	if to == kingsideKingTo {
@@ -201,4 +244,12 @@ func (g *Game) castlingKingPathIsSafe(spec castlingSpec, opponent Color) bool {
 		}
 	}
 	return true
+}
+
+func (g *Game) clearCastlingRightsForRookSquare(square Square) {
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if g.castlingRookFrom[right] == square {
+			g.castling &^= right
+		}
+	}
 }
