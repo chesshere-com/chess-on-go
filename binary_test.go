@@ -41,6 +41,14 @@ func TestBinaryEncoding(t *testing.T) {
 	}
 }
 
+func TestMarshalBinaryRejectsNonStandardVariant(t *testing.T) {
+	g, err := NewGameFromFENWithVariant(STARTING_POSITION_FEN, VariantChess960)
+	require.NoError(t, err)
+
+	_, err = g.MarshalBinary()
+	require.Error(t, err)
+}
+
 func TestBinaryDecodingRejectsInvalidPayloads(t *testing.T) {
 	g := NewGame()
 	data, err := g.MarshalBinary()
