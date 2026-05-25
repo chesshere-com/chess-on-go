@@ -41,12 +41,32 @@ func TestBinaryEncoding(t *testing.T) {
 	}
 }
 
-func TestMarshalBinaryRejectsNonStandardVariant(t *testing.T) {
+func TestMarshalBinaryRoundTripsChess960Variant(t *testing.T) {
 	g, err := NewGameFromFENWithVariant(STARTING_POSITION_FEN, VariantChess960)
 	require.NoError(t, err)
 
-	_, err = g.MarshalBinary()
-	require.Error(t, err)
+	data, err := g.MarshalBinary()
+	require.NoError(t, err)
+
+	var decoded Game
+	require.NoError(t, decoded.UnmarshalBinary(data))
+	require.Equal(t, VariantChess960, decoded.Variant())
+	require.Equal(t, g.FEN(), decoded.FEN())
+	require.Equal(t, g.PositionKey(), decoded.PositionKey())
+}
+
+func TestMarshalBinaryRoundTripsThreeCheckVariant(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("4k3/8/8/8/8/8/Q7/4K3 w - - 0 1 +2+0", VariantThreeCheck)
+	require.NoError(t, err)
+
+	data, err := g.MarshalBinary()
+	require.NoError(t, err)
+
+	var decoded Game
+	require.NoError(t, decoded.UnmarshalBinary(data))
+	require.Equal(t, VariantThreeCheck, decoded.Variant())
+	require.Equal(t, g.FEN(), decoded.FEN())
+	require.Equal(t, g.PositionKey(), decoded.PositionKey())
 }
 
 func TestBinaryDecodingRejectsInvalidPayloads(t *testing.T) {
