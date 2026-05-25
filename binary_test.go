@@ -69,6 +69,20 @@ func TestMarshalBinaryRoundTripsThreeCheckVariant(t *testing.T) {
 	require.Equal(t, g.PositionKey(), decoded.PositionKey())
 }
 
+func TestUnmarshalBinaryRejectsInvalidThreeCheckCounters(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("4k3/8/8/8/8/8/Q7/4K3 w - - 0 1 +2+0", VariantThreeCheck)
+	require.NoError(t, err)
+
+	data, err := g.MarshalBinary()
+	require.NoError(t, err)
+
+	variantOffset := binaryHeaderSize + 64 + 15
+	data[variantOffset+1] = 4
+
+	var decoded Game
+	require.Error(t, decoded.UnmarshalBinary(data))
+}
+
 func TestMarshalBinaryRoundTripsKingOfTheHillVariant(t *testing.T) {
 	g, err := NewGameFromFENWithVariant("4k3/8/8/8/8/3K4/8/R7 w - - 0 1", VariantKingOfTheHill)
 	require.NoError(t, err)

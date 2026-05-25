@@ -510,7 +510,7 @@ func (g *Game) fenCastlingField() string {
 }
 
 func (g *Game) castlingRightsMatchBoard() bool {
-	if g.variant == VariantStandard {
+	if g.variant != VariantChess960 {
 		if (g.castling&CASTLE_WKS) > 0 && (g.squares[W_KING_INIT_SQUARE] != W_KING || g.squares[WKS_ROOK_ORIGINAL_SQUARE] != W_ROOK) {
 			return false
 		}

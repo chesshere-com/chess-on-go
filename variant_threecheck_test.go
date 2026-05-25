@@ -74,6 +74,12 @@ func TestStandardFENRejectsThreeCheckCounterField(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestThreeCheckUsesStandardCastlingRightsValidation(t *testing.T) {
+	_, err := NewGameFromFENWithVariant("r3k2r/8/8/8/3K4/8/8/R6R b KQkq - 0 1 +0+0", VariantThreeCheck)
+
+	require.Error(t, err)
+}
+
 func TestThreeCheckPositionKeyIncludesCounters(t *testing.T) {
 	base := "4k3/8/8/8/8/8/Q7/4K3 w - - 0 1"
 	twoChecks, err := NewGameFromFENWithVariant(base+" +2+0", VariantThreeCheck)
