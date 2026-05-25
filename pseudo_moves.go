@@ -60,29 +60,21 @@ func (g *Game) genSlidingMoves(pieces, ours Bitboard, attacksFrom func(Square, B
 
 // Generate castling pseudo-legal moves
 func (g *Game) genCastling() {
-	if g.turn == WHITE && (g.castling&CASTLE_WKS) > 0 && g.squares[W_KING_INIT_SQUARE] == W_KING && g.squares[WKS_ROOK_ORIGINAL_SQUARE] == W_ROOK && (g.occupied&(0x3<<61)) == 0 {
-		from := Square(g.whites[KING].lsbIndex())
-		to := Square(WKS_KING_TO_SQUARE)
-		g.pseudoMoves = append(g.pseudoMoves, NewCastlingMove(from, to))
-
-	}
-
-	if g.turn == WHITE && (g.castling&CASTLE_WQS) > 0 && g.squares[W_KING_INIT_SQUARE] == W_KING && g.squares[WQS_ROOK_ORIGINAL_SQUARE] == W_ROOK && (g.occupied&(0x7<<57)) == 0 {
-		from := Square(g.whites[KING].lsbIndex())
-		to := Square(WQS_KING_TO_SQUARE)
-		g.pseudoMoves = append(g.pseudoMoves, NewCastlingMove(from, to))
-	}
-
-	if g.turn == BLACK && (g.castling&CASTLE_BKS) > 0 && g.squares[B_KING_INIT_SQUARE] == B_KING && g.squares[BKS_ROOK_ORIGINAL_SQUARE] == B_ROOK && (g.occupied&(0x3<<5)) == 0 {
-		from := Square(g.blacks[KING].lsbIndex())
-		to := Square(BKS_KING_TO_SQUARE)
-		g.pseudoMoves = append(g.pseudoMoves, NewCastlingMove(from, to))
-	}
-
-	if g.turn == BLACK && (g.castling&CASTLE_BQS) > 0 && g.squares[B_KING_INIT_SQUARE] == B_KING && g.squares[BQS_ROOK_ORIGINAL_SQUARE] == B_ROOK && (g.occupied&(0x7<<1)) == 0 {
-		from := Square(g.blacks[KING].lsbIndex())
-		to := Square(BQS_KING_TO_SQUARE)
-		g.pseudoMoves = append(g.pseudoMoves, NewCastlingMove(from, to))
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		spec, ok := g.castlingSpec(right)
+		if !ok {
+			continue
+		}
+		if spec.color != g.turn || (g.castling&spec.right) == 0 {
+			continue
+		}
+		if g.squares[spec.kingFrom] != spec.kingPiece || g.squares[spec.rookFrom] != spec.rookPiece {
+			continue
+		}
+		if g.occupied&spec.emptyMask != 0 {
+			continue
+		}
+		g.pseudoMoves = append(g.pseudoMoves, NewCastlingMove(spec.kingFrom, spec.kingTo))
 	}
 }
 
