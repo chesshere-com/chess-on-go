@@ -497,7 +497,11 @@ func (g *Game) appendLegalCastlingMoves(dst []Move, info *legalMoveInfo) []Move 
 	if g.castling == 0 {
 		return dst
 	}
-	for _, spec := range castlingSpecs {
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		spec, ok := g.castlingSpec(right)
+		if !ok {
+			continue
+		}
 		if spec.color != g.turn || (g.castling&spec.right) == 0 {
 			continue
 		}
@@ -601,57 +605,16 @@ func (g *Game) canKingMoveWithInfo(m Move, info *legalMoveInfo) bool {
 			return false
 		}
 
-		spec := castlingSpecForKingTo(m.To())
-		inBetweenOccupied := (g.occupied &^ fromBB) | (Bitboard(1) << spec.transit)
-		if g.isSquareAttackedByWithOccupied(spec.transit, opponent, inBetweenOccupied) {
+		spec, ok := g.castlingSpecForMove(m)
+		if !ok {
 			return false
 		}
 
-		finalOccupied := g.occupied
-		finalOccupied &^= fromBB
-		finalOccupied &^= Bitboard(1) << spec.rookFrom
-		finalOccupied |= toBB
-		finalOccupied |= Bitboard(1) << spec.rookTo
-		return !g.isSquareAttackedByWithOccupied(m.To(), opponent, finalOccupied)
+		return g.castlingKingPathIsSafe(spec, opponent)
 	}
 
 	occupiedAfter := (g.occupied &^ fromBB) | toBB
 	return !g.isSquareAttackedByWithOccupied(m.To(), opponent, occupiedAfter)
-}
-
-type castlingSpec struct {
-	color     Color
-	right     int
-	kingFrom  Square
-	kingTo    Square
-	rookFrom  Square
-	rookTo    Square
-	transit   Square
-	kingPiece Piece
-	rookPiece Piece
-	emptyMask Bitboard
-}
-
-var castlingSpecs = [...]castlingSpec{
-	{color: WHITE, right: CASTLE_WKS, kingFrom: W_KING_INIT_SQUARE, kingTo: WKS_KING_TO_SQUARE, rookFrom: WKS_ROOK_ORIGINAL_SQUARE, rookTo: 61, transit: 61, kingPiece: W_KING, rookPiece: W_ROOK, emptyMask: Bitboard(0x3 << 61)},
-	{color: WHITE, right: CASTLE_WQS, kingFrom: W_KING_INIT_SQUARE, kingTo: WQS_KING_TO_SQUARE, rookFrom: WQS_ROOK_ORIGINAL_SQUARE, rookTo: 59, transit: 59, kingPiece: W_KING, rookPiece: W_ROOK, emptyMask: Bitboard(0x7 << 57)},
-	{color: BLACK, right: CASTLE_BKS, kingFrom: B_KING_INIT_SQUARE, kingTo: BKS_KING_TO_SQUARE, rookFrom: BKS_ROOK_ORIGINAL_SQUARE, rookTo: 5, transit: 5, kingPiece: B_KING, rookPiece: B_ROOK, emptyMask: Bitboard(0x3 << 5)},
-	{color: BLACK, right: CASTLE_BQS, kingFrom: B_KING_INIT_SQUARE, kingTo: BQS_KING_TO_SQUARE, rookFrom: BQS_ROOK_ORIGINAL_SQUARE, rookTo: 3, transit: 3, kingPiece: B_KING, rookPiece: B_ROOK, emptyMask: Bitboard(0x7 << 1)},
-}
-
-func castlingSpecForKingTo(to Square) castlingSpec {
-	switch to {
-	case WKS_KING_TO_SQUARE:
-		return castlingSpecs[0]
-	case WQS_KING_TO_SQUARE:
-		return castlingSpecs[1]
-	case BKS_KING_TO_SQUARE:
-		return castlingSpecs[2]
-	case BQS_KING_TO_SQUARE:
-		return castlingSpecs[3]
-	default:
-		return castlingSpec{kingTo: to, rookFrom: to, rookTo: to, transit: to}
-	}
 }
 
 func oppositeColor(color Color) Color {
