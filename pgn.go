@@ -14,11 +14,13 @@ const pgnMovetextLineWidth = 80
 // ignored; only the main line is applied.
 func (g *Game) LoadPGN(pgn string) error {
 	tags := parsePGNTags(pgn)
+	variant := pgnVariant(tags["Variant"])
 	startFEN := STARTING_POSITION_FEN
 	if fen := tags["FEN"]; fen != "" {
 		startFEN = strings.TrimSpace(fen)
+	} else if variant == VariantThreeCheck {
+		startFEN = STARTING_POSITION_FEN + " +0+0"
 	}
-	variant := pgnVariant(tags["Variant"])
 
 	loaded := &Game{}
 	if err := loaded.LoadFENWithVariant(startFEN, variant); err != nil {
@@ -117,12 +119,30 @@ func cloneStringMap(src map[string]string) map[string]string {
 }
 
 func pgnVariant(tag string) Variant {
-	switch strings.ToLower(strings.ReplaceAll(strings.TrimSpace(tag), " ", "")) {
-	case "chess960", "fischerrandom":
-		return VariantChess960
-	default:
-		return VariantStandard
+	normalized := normalizeVariantName(tag)
+	for _, variant := range []Variant{VariantStandard, VariantChess960, VariantKingOfTheHill, VariantThreeCheck} {
+		rules := rulesForVariant(variant)
+		for _, name := range rules.pgnNames {
+			if normalizeVariantName(name) == normalized {
+				return variant
+			}
+		}
 	}
+	return VariantStandard
+}
+
+func normalizeVariantName(name string) string {
+	out := make([]byte, 0, len(name))
+	for i := 0; i < len(name); i++ {
+		c := name[i]
+		if c >= 'A' && c <= 'Z' {
+			c += 'a' - 'A'
+		}
+		if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+			out = append(out, c)
+		}
+	}
+	return string(out)
 }
 
 // PGNTags returns a copy of the PGN tag pairs loaded with the game.
@@ -161,11 +181,11 @@ func (g *Game) recordPGNMove(m Move) {
 		g.pgnStartTurn = g.turn
 		g.pgnStartFullMove = g.fullMoves
 		g.pgnStartFEN = g.FEN()
-		if g.variant == VariantChess960 {
+		if tag := g.rules().pgnVariantTag; tag != "" {
 			if g.pgnTags == nil {
 				g.pgnTags = map[string]string{}
 			}
-			g.pgnTags["Variant"] = "Chess960"
+			g.pgnTags["Variant"] = tag
 			g.pgnTags["SetUp"] = "1"
 			g.pgnTags["FEN"] = g.pgnStartFEN
 		}
@@ -385,6 +405,12 @@ func validatePGNResultAgainstStatus(result string, g *Game) error {
 		} else {
 			expected = "0-1"
 		}
+	case GameStatusVariantWin:
+		if g.Winner() == WHITE {
+			expected = "1-0"
+		} else if g.Winner() == BLACK {
+			expected = "0-1"
+		}
 	case GameStatusStalemate, GameStatusDrawInsufficientMaterial, GameStatusDrawFivefoldRepetition, GameStatusDrawSeventyFiveMoveRule:
 		expected = "1/2-1/2"
 	}
@@ -401,6 +427,14 @@ func inferPGNResult(g *Game) string {
 			return "1-0"
 		}
 		return "0-1"
+	case GameStatusVariantWin:
+		if g.Winner() == WHITE {
+			return "1-0"
+		}
+		if g.Winner() == BLACK {
+			return "0-1"
+		}
+		return "*"
 	case GameStatusStalemate, GameStatusDrawInsufficientMaterial, GameStatusDrawFivefoldRepetition, GameStatusDrawSeventyFiveMoveRule:
 		return "1/2-1/2"
 	default:

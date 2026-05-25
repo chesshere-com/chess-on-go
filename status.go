@@ -60,11 +60,48 @@ func (g *Game) SeedPositionHistory(keys []uint64) {
 }
 
 func (g *Game) refreshStatus() {
-	g.isCheckmate = g.isCheck && !g.hasMoves()
-	g.isStalemate = !g.isCheckmate && !g.hasMoves()
-	g.isMaterialDraw = g.hasInsufficientMaterial()
-	g.isThreefoldRepetition = g.checkThreefoldRepetition()
-	g.isFiftyMoveRule = g.checkFiftyMoveRule()
-	g.isSeventyFiveMoveRule = g.checkSeventyFiveMoveRule()
-	g.isFinished = g.isCheckmate || g.isStalemate || g.isMaterialDraw || g.IsFivefoldRepetition() || g.isSeventyFiveMoveRule
+	status := computedStatus{
+		isCheckmate:           g.isCheck && !g.hasMoves(),
+		isMaterialDraw:        g.hasInsufficientMaterial(),
+		isThreefoldRepetition: g.checkThreefoldRepetition(),
+		isFiftyMoveRule:       g.checkFiftyMoveRule(),
+		isSeventyFiveMoveRule: g.checkSeventyFiveMoveRule(),
+		winner:                NO_COLOR,
+		status:                GameStatusOngoing,
+	}
+	status.isStalemate = !status.isCheckmate && !g.hasMoves()
+	switch {
+	case status.isCheckmate:
+		status.status = GameStatusCheckmate
+		status.winner = oppositeColor(g.turn)
+	case status.isStalemate:
+		status.status = GameStatusStalemate
+	case status.isMaterialDraw:
+		status.status = GameStatusDrawInsufficientMaterial
+	case g.IsFivefoldRepetition():
+		status.status = GameStatusDrawFivefoldRepetition
+	case status.isSeventyFiveMoveRule:
+		status.status = GameStatusDrawSeventyFiveMoveRule
+	case g.isCheck:
+		status.status = GameStatusCheck
+	}
+	status.isFinished = status.isCheckmate ||
+		status.isStalemate ||
+		status.isMaterialDraw ||
+		g.IsFivefoldRepetition() ||
+		status.isSeventyFiveMoveRule
+
+	if hook := g.rules().overrideStatus; hook != nil {
+		hook(g, &status)
+	}
+
+	g.isCheckmate = status.isCheckmate
+	g.isStalemate = status.isStalemate
+	g.isMaterialDraw = status.isMaterialDraw
+	g.isThreefoldRepetition = status.isThreefoldRepetition
+	g.isFiftyMoveRule = status.isFiftyMoveRule
+	g.isSeventyFiveMoveRule = status.isSeventyFiveMoveRule
+	g.isFinished = status.isFinished
+	g.winner = status.winner
+	g.status = status.status
 }

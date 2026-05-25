@@ -66,6 +66,7 @@ const (
 	GameStatusDrawInsufficientMaterial
 	GameStatusDrawFivefoldRepetition
 	GameStatusDrawSeventyFiveMoveRule
+	GameStatusVariantWin
 )
 
 // NewGameFromFEN creates a game initialized from FEN.
@@ -307,27 +308,17 @@ func (g *Game) Snapshot() GameSnapshot {
 
 // Status returns the current game status.
 func (g *Game) Status() GameStatus {
-	switch {
-	case g.isCheckmate:
-		return GameStatusCheckmate
-	case g.isStalemate:
-		return GameStatusStalemate
-	case g.isMaterialDraw:
-		return GameStatusDrawInsufficientMaterial
-	case g.IsFivefoldRepetition():
-		return GameStatusDrawFivefoldRepetition
-	case g.isSeventyFiveMoveRule:
-		return GameStatusDrawSeventyFiveMoveRule
-	case g.isCheck:
-		return GameStatusCheck
-	default:
-		return GameStatusOngoing
-	}
+	return g.status
 }
 
 // IsTerminal reports whether the game is finished.
 func (g *Game) IsTerminal() bool {
 	return g.isFinished
+}
+
+// Winner reports the winning color for decisive terminal positions, or NO_COLOR.
+func (g *Game) Winner() Color {
+	return g.winner
 }
 
 // String returns a stable machine-readable status name.
@@ -347,6 +338,8 @@ func (s GameStatus) String() string {
 		return "draw_fivefold_repetition"
 	case GameStatusDrawSeventyFiveMoveRule:
 		return "draw_seventy_five_move_rule"
+	case GameStatusVariantWin:
+		return "variant_win"
 	default:
 		return "unknown"
 	}

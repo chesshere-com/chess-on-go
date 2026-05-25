@@ -6,7 +6,24 @@ type Variant uint8
 const (
 	VariantStandard Variant = iota
 	VariantChess960
+	VariantKingOfTheHill
+	VariantThreeCheck
+	VariantAtomic
+	VariantAntichess
+	VariantHorde
+	VariantCrazyhouse
 )
+
+const (
+	whiteStateIndex = 0
+	blackStateIndex = 1
+)
+
+type variantState struct {
+	checksGiven [2]uint8
+	pockets     [2][7]uint8
+	promoted    Bitboard
+}
 
 func (v Variant) String() string {
 	switch v {
@@ -14,13 +31,32 @@ func (v Variant) String() string {
 		return "standard"
 	case VariantChess960:
 		return "chess960"
+	case VariantKingOfTheHill:
+		return "kingofthehill"
+	case VariantThreeCheck:
+		return "threecheck"
+	case VariantAtomic:
+		return "atomic"
+	case VariantAntichess:
+		return "antichess"
+	case VariantHorde:
+		return "horde"
+	case VariantCrazyhouse:
+		return "crazyhouse"
 	default:
 		return "unknown"
 	}
 }
 
 func validVariant(v Variant) bool {
-	return v == VariantStandard || v == VariantChess960
+	return rulesForVariant(v).implemented
+}
+
+func variantColorIndex(color Color) int {
+	if color == BLACK {
+		return blackStateIndex
+	}
+	return whiteStateIndex
 }
 
 // Variant returns the rule variant for this game.

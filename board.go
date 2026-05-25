@@ -36,6 +36,7 @@ type Game struct {
 	fullMoves             int
 	turn                  Color
 	variant               Variant
+	variantState          variantState
 	castlingRookFrom      [16]Square
 	pseudoMoves           []Move
 	legalMoves            []Move
@@ -49,6 +50,8 @@ type Game struct {
 	isFiftyMoveRule       bool
 	isSeventyFiveMoveRule bool
 	isFinished            bool
+	winner                Color
+	status                GameStatus
 	history               []GameState
 
 	pgnTags          map[string]string
@@ -79,6 +82,7 @@ func (g *Game) Reset() {
 	g.fullMoves = 0
 	g.turn = WHITE
 	g.variant = VariantStandard
+	g.variantState = variantState{}
 	g.castlingRookFrom = defaultCastlingRookFrom()
 	g.pseudoMoves = []Move{}
 	g.legalMoves = []Move{}
@@ -92,6 +96,8 @@ func (g *Game) Reset() {
 	g.isFiftyMoveRule = false
 	g.isSeventyFiveMoveRule = false
 	g.isFinished = false
+	g.winner = NO_COLOR
+	g.status = GameStatusOngoing
 	g.history = []GameState{}
 	g.pgnTags = nil
 	g.pgnMoves = nil
@@ -122,6 +128,7 @@ func CloneGame(g *Game) Game {
 		fullMoves:             g.fullMoves,
 		turn:                  g.turn,
 		variant:               g.variant,
+		variantState:          g.variantState,
 		castlingRookFrom:      g.castlingRookFrom,
 		pseudoMoves:           []Move{},
 		legalMoves:            []Move{},
@@ -135,6 +142,8 @@ func CloneGame(g *Game) Game {
 		isFiftyMoveRule:       g.isFiftyMoveRule,
 		isSeventyFiveMoveRule: g.isSeventyFiveMoveRule,
 		isFinished:            g.isFinished,
+		winner:                g.winner,
+		status:                g.status,
 		history:               make([]GameState, len(g.history)),
 		pgnTags:               cloneStringMap(g.pgnTags),
 		pgnMoves:              append([]string(nil), g.pgnMoves...),
