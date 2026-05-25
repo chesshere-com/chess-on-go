@@ -37,6 +37,15 @@ func NewGameFromFENWithVariant(fen string, variant Variant) (*Game, error) {
 	return g, nil
 }
 
+// NewChess960Game creates a Chess960 game from a position ID in [0, 959].
+func NewChess960Game(position int) (*Game, error) {
+	fen, err := Chess960StartingFEN(position)
+	if err != nil {
+		return nil, err
+	}
+	return NewGameFromFENWithVariant(fen, VariantChess960)
+}
+
 // LoadFENWithVariant initializes the game from FEN using variant-specific parsing and rules.
 func (g *Game) LoadFENWithVariant(fen string, variant Variant) error {
 	if !validVariant(variant) {
