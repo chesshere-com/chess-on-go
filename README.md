@@ -223,28 +223,35 @@ go run ./cmd/chessongo perft -depth 2 "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
 
 ## Supported Rules
 
-The package supports standard chess by default and Chess960 through explicit
-variant constructors/loading APIs:
+The package supports standard chess by default and variants through explicit
+constructors or variant loading APIs:
 
 ```go
 game, err := chessongo.NewChess960Game(518)
 fen, err := chessongo.Chess960StartingFEN(0)
 game, err = chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantChess960)
+
+hill, err := chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantKingOfTheHill)
+threeCheck, err := chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantThreeCheck)
 ```
 
 Chess960 FEN export uses Shredder-FEN castling file letters so rook origins are
-not lost.
+not lost. Three-check FEN uses a seventh `+W+B` field for checks given, such as
+`+0+0`.
 
 Covered rule areas include:
 
 - Legal move generation.
 - Check, checkmate, and stalemate.
+- King of the Hill center-square wins.
+- Three-check counters and third-check wins.
 - Castling legality, including attacked transit/destination squares.
 - En passant legality, including discovered-check edge cases.
 - Promotions.
 - Insufficient material.
 - Claimable threefold repetition and 50-move rule.
 - Automatic fivefold repetition and 75-move rule.
+- Variant-aware PGN, FEN, Zobrist hashes, snapshots, and binary serialization.
 
 ## Testing
 
