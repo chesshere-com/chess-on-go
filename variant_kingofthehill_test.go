@@ -74,3 +74,9 @@ func TestKingOfTheHillMoveIntoCenterWins(t *testing.T) {
 	require.Equal(t, GameStatusVariantWin, g.Status())
 	require.Equal(t, Color(WHITE), g.Winner())
 }
+
+func TestKingOfTheHillUsesStandardCastlingRightsValidation(t *testing.T) {
+	_, err := NewGameFromFENWithVariant("r3k2r/8/8/8/3K4/8/8/R6R b KQkq - 0 1", VariantKingOfTheHill)
+
+	require.Error(t, err)
+}

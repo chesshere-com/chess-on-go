@@ -116,6 +116,11 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 		}
 		decoded.variantState.checksGiven[whiteStateIndex] = data[offset+1]
 		decoded.variantState.checksGiven[blackStateIndex] = data[offset+2]
+		if decoded.variant == VariantThreeCheck &&
+			(decoded.variantState.checksGiven[whiteStateIndex] > 3 ||
+				decoded.variantState.checksGiven[blackStateIndex] > 3) {
+			return errors.New("invalid three-check counter in binary board")
+		}
 		offset += 3
 		for i := range decoded.castlingRookFrom {
 			decoded.castlingRookFrom[i] = Square(data[offset+i])
