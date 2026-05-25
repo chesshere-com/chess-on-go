@@ -231,8 +231,11 @@ game, err := chessongo.NewChess960Game(518)
 fen, err := chessongo.Chess960StartingFEN(0)
 game, err = chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantChess960)
 
-hill, err := chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantKingOfTheHill)
-threeCheck, err := chessongo.NewGameFromFENWithVariant(fen, chessongo.VariantThreeCheck)
+standardFEN := chessongo.STARTING_POSITION_FEN
+hill, err := chessongo.NewGameFromFENWithVariant(standardFEN, chessongo.VariantKingOfTheHill)
+
+threeCheckFEN := chessongo.STARTING_POSITION_FEN + " +0+0"
+threeCheck, err := chessongo.NewGameFromFENWithVariant(threeCheckFEN, chessongo.VariantThreeCheck)
 ```
 
 Chess960 FEN export uses Shredder-FEN castling file letters so rook origins are
