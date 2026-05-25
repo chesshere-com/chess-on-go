@@ -18,9 +18,10 @@ func (g *Game) LoadPGN(pgn string) error {
 	if fen := tags["FEN"]; fen != "" {
 		startFEN = strings.TrimSpace(fen)
 	}
+	variant := pgnVariant(tags["Variant"])
 
 	loaded := &Game{}
-	if err := loaded.LoadFEN(startFEN); err != nil {
+	if err := loaded.LoadFENWithVariant(startFEN, variant); err != nil {
 		return err
 	}
 	loaded.pgnTags = cloneStringMap(tags)
@@ -115,6 +116,15 @@ func cloneStringMap(src map[string]string) map[string]string {
 	return dst
 }
 
+func pgnVariant(tag string) Variant {
+	switch strings.ToLower(strings.ReplaceAll(strings.TrimSpace(tag), " ", "")) {
+	case "chess960", "fischerrandom":
+		return VariantChess960
+	default:
+		return VariantStandard
+	}
+}
+
 // PGNTags returns a copy of the PGN tag pairs loaded with the game.
 func (g *Game) PGNTags() map[string]string {
 	tags := cloneStringMap(g.pgnTags)
@@ -151,6 +161,14 @@ func (g *Game) recordPGNMove(m Move) {
 		g.pgnStartTurn = g.turn
 		g.pgnStartFullMove = g.fullMoves
 		g.pgnStartFEN = g.FEN()
+		if g.variant == VariantChess960 {
+			if g.pgnTags == nil {
+				g.pgnTags = map[string]string{}
+			}
+			g.pgnTags["Variant"] = "Chess960"
+			g.pgnTags["SetUp"] = "1"
+			g.pgnTags["FEN"] = g.pgnStartFEN
+		}
 	}
 	g.pgnMoves = append(g.pgnMoves, g.GetMoveSan(m))
 	g.pgnResult = ""
