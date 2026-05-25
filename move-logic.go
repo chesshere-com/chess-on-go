@@ -135,6 +135,7 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 		CapturedPiece:    capturedPiece,
 		Castling:         g.castling,
 		CastlingRookFrom: g.castlingRookFrom,
+		VariantState:     g.variantState,
 		EnPassant:        g.enPassant,
 		HalfMoves:        g.halfMoves,
 		FullMoves:        g.fullMoves,
@@ -183,6 +184,10 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 		g.turn = BLACK
 	} else {
 		g.turn = WHITE
+	}
+
+	if hook := g.rules().afterMove; hook != nil {
+		hook(g, m, &g.history[len(g.history)-1])
 	}
 
 	if updatePositionHistory {

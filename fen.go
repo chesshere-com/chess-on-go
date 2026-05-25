@@ -50,8 +50,11 @@ func (g *Game) LoadFEN(fen string) error {
 
 // loadFEN initializes the game from a FEN string and refreshes legal moves and status flags.
 func (g *Game) loadFEN(fen string, variant Variant) error {
-	parts, ok := splitFENFields(fen)
+	parts, ok := splitFENFieldsForVariant(fen, variant)
 	if !ok {
+		if variant == VariantThreeCheck {
+			return invalidFEN("expected seven fields")
+		}
 		return invalidFEN("expected six fields")
 	}
 
@@ -162,6 +165,15 @@ func (g *Game) loadFEN(fen string, variant Variant) error {
 		return invalidFENField(FENFieldFullMoveNumber, "invalid fullmove number")
 	}
 	parsed.fullMoves = fullMoves
+
+	if variant == VariantThreeCheck {
+		counts, err := parseThreeCheckCounters(parts[6])
+		if err != nil {
+			return invalidFENField(FENFieldVariantState, err.Error())
+		}
+		parsed.variantState.checksGiven = counts
+	}
+
 	if parsed.sideNotToMoveInCheck() {
 		return invalidFENField(FENFieldLegality, "side not to move is in check")
 	}
@@ -174,15 +186,18 @@ func (g *Game) loadFEN(fen string, variant Variant) error {
 	return nil
 }
 
-func splitFENFields(fen string) ([6]string, bool) {
-	var fields [6]string
-	field := 0
+func splitFENFieldsForVariant(fen string, variant Variant) ([]string, bool) {
+	expected := 6
+	if variant == VariantThreeCheck {
+		expected = 7
+	}
+	fields := make([]string, 0, expected)
 	i := 0
 	for i < len(fen) && fen[i] == ' ' {
 		i++
 	}
 	for i < len(fen) {
-		if field >= len(fields) {
+		if len(fields) >= expected {
 			return fields, false
 		}
 		start := i
@@ -192,13 +207,12 @@ func splitFENFields(fen string) ([6]string, bool) {
 		if start == i {
 			return fields, false
 		}
-		fields[field] = fen[start:i]
-		field++
+		fields = append(fields, fen[start:i])
 		for i < len(fen) && fen[i] == ' ' {
 			i++
 		}
 	}
-	return fields, field == len(fields)
+	return fields, len(fields) == expected
 }
 
 func fenPiece(c byte) (Piece, bool) {
@@ -274,7 +288,11 @@ func (g *Game) ToFEN() string {
 		enPassant = FILE_TO_STRING[file] + RANK_TO_STRING[rank]
 	}
 
-	return fmt.Sprintf("%s %s %s %s %d %d", pieces, turn, castling, enPassant, g.halfMoves, g.fullMoves)
+	fen := fmt.Sprintf("%s %s %s %s %d %d", pieces, turn, castling, enPassant, g.halfMoves, g.fullMoves)
+	if g.variant == VariantThreeCheck {
+		fen += " " + g.threeCheckFENField()
+	}
+	return fen
 }
 
 func parseFENNumber(token string) (int, error) {
