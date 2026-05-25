@@ -38,6 +38,19 @@ func TestTryMoveUCIRequiresPromotionSuffix(t *testing.T) {
 	require.Error(t, g.TryMoveUCI("a7a8"))
 }
 
+func TestChess960ParseUCIRecognizesCastlingToRookSquare(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("6k1/8/8/8/8/8/8/6KR w H - 0 1", VariantChess960)
+	require.NoError(t, err)
+
+	move, err := g.ParseMoveUCI("g1h1")
+	require.NoError(t, err)
+	require.True(t, move.IsCastlingMove())
+	require.Equal(t, COORDS_TO_SQUARE["g1"], move.To())
+
+	require.NoError(t, g.TryMoveUCI("g1h1"))
+	require.Equal(t, Piece(W_ROOK), g.squares[COORDS_TO_SQUARE["f1"]])
+}
+
 func TestTryMoveSAN(t *testing.T) {
 	g := NewGame()
 
@@ -61,6 +74,19 @@ func TestTryMoveSANCastlingAndSuffix(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, check.TryMoveSAN("Rf8+"))
 	require.True(t, check.isCheck)
+}
+
+func TestChess960SANForCastling(t *testing.T) {
+	g, err := NewGameFromFENWithVariant("6k1/8/8/8/8/8/8/6KR w H - 0 1", VariantChess960)
+	require.NoError(t, err)
+
+	for _, move := range g.LegalMovesList() {
+		if move.IsCastlingMove() {
+			require.Equal(t, "O-O", g.GetMoveSanWithoutSuffix(move))
+			return
+		}
+	}
+	t.Fatal("missing castling move")
 }
 
 func TestTryMoveSANRejectsInvalidMoveAndPreservesPosition(t *testing.T) {

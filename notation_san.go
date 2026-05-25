@@ -40,10 +40,10 @@ func (g *Game) GetMoveSanWithoutSuffix(m Move) string {
 
 	if m.IsCastlingMove() {
 		if m.To() == WKS_KING_TO_SQUARE || m.To() == BKS_KING_TO_SQUARE {
-			sb.WriteString("O-O")
+			return "O-O"
 		}
 		if m.To() == WQS_KING_TO_SQUARE || m.To() == BQS_KING_TO_SQUARE {
-			sb.WriteString("O-O-O")
+			return "O-O-O"
 		}
 	} else {
 		movingKind := g.squares[from].Kind()
