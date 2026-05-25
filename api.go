@@ -28,6 +28,7 @@ type DrawStatus struct {
 // GameSnapshot is a defensive value copy of the public game state.
 type GameSnapshot struct {
 	FEN            string
+	Variant        Variant
 	SideToMove     Color
 	Board          [64]Piece
 	WhitePieces    Bitboard
@@ -69,11 +70,7 @@ const (
 
 // NewGameFromFEN creates a game initialized from FEN.
 func NewGameFromFEN(fen string) (*Game, error) {
-	g := &Game{}
-	if err := g.LoadFEN(fen); err != nil {
-		return nil, err
-	}
-	return g, nil
+	return NewGameFromFENWithVariant(fen, VariantStandard)
 }
 
 // Clone returns a deep copy of the game.
@@ -288,6 +285,7 @@ func (g *Game) DrawStatus() DrawStatus {
 func (g *Game) Snapshot() GameSnapshot {
 	return GameSnapshot{
 		FEN:            g.FEN(),
+		Variant:        g.Variant(),
 		SideToMove:     g.SideToMove(),
 		Board:          g.Board(),
 		WhitePieces:    g.Pieces(WHITE),

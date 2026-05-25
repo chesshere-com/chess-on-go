@@ -94,6 +94,7 @@ func TestSnapshotReturnsReadOnlyGameState(t *testing.T) {
 
 	snapshot := g.Snapshot()
 	require.Equal(t, STARTING_POSITION_FEN, snapshot.FEN)
+	require.Equal(t, VariantStandard, snapshot.Variant)
 	require.Equal(t, Color(WHITE), snapshot.SideToMove)
 	require.Equal(t, GameStatusOngoing, snapshot.Status)
 	require.False(t, snapshot.Terminal)
@@ -107,6 +108,13 @@ func TestSnapshotReturnsReadOnlyGameState(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, Piece(W_KING), piece)
 	require.NotEqual(t, NewMove(0, 1, EMPTY), g.LegalMovesList()[0])
+}
+
+func TestSnapshotReportsVariant(t *testing.T) {
+	g, err := NewGameFromFENWithVariant(STARTING_POSITION_FEN, VariantChess960)
+	require.NoError(t, err)
+
+	require.Equal(t, VariantChess960, g.Snapshot().Variant)
 }
 
 func TestDrawStatusAvoidsDirectRuleFieldAccess(t *testing.T) {

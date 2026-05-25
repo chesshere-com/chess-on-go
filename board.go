@@ -35,6 +35,8 @@ type Game struct {
 	halfMoves             int
 	fullMoves             int
 	turn                  Color
+	variant               Variant
+	castlingRookFrom      [16]Square
 	pseudoMoves           []Move
 	legalMoves            []Move
 	positionHistory       map[uint64]int
@@ -76,6 +78,8 @@ func (g *Game) Reset() {
 	g.halfMoves = 0
 	g.fullMoves = 0
 	g.turn = WHITE
+	g.variant = VariantStandard
+	g.castlingRookFrom = defaultCastlingRookFrom()
 	g.pseudoMoves = []Move{}
 	g.legalMoves = []Move{}
 	g.positionHistory = map[uint64]int{}
@@ -117,6 +121,8 @@ func CloneGame(g *Game) Game {
 		halfMoves:             g.halfMoves,
 		fullMoves:             g.fullMoves,
 		turn:                  g.turn,
+		variant:               g.variant,
+		castlingRookFrom:      g.castlingRookFrom,
 		pseudoMoves:           []Move{},
 		legalMoves:            []Move{},
 		positionHistory:       map[uint64]int{},

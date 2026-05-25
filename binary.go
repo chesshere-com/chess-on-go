@@ -14,6 +14,10 @@ const (
 
 // MarshalBinary encodes the board state into a byte slice.
 func (g *Game) MarshalBinary() ([]byte, error) {
+	if g.variant != VariantStandard {
+		return nil, errors.New("binary encoding is not supported for non-standard variants")
+	}
+
 	buf := make([]byte, binaryHeaderSize+binaryFixedPayloadSize+len(g.positionHistory)*binaryHistoryEntrySize)
 
 	copy(buf[0:binaryHeaderSize], binaryMagic)

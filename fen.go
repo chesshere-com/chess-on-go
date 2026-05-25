@@ -33,8 +33,6 @@ var STRING_TO_KIND = map[string]uint{
 	"p": PAWN, "n": KNIGHT, "b": BISHOP, "r": ROOK, "q": QUEEN, "k": KING,
 }
 
-
-
 // FILE_TO_STRING maps zero-based file indexes to file strings.
 //
 // Compatibility: prefer Square.FileLetter in new code.
@@ -47,6 +45,11 @@ var RANK_TO_STRING = map[int]string{0: "8", 1: "7", 2: "6", 3: "5", 4: "4", 5: "
 
 // LoadFEN initializes the game from a FEN string and refreshes legal moves and status flags.
 func (g *Game) LoadFEN(fen string) error {
+	return g.loadFEN(fen, VariantStandard)
+}
+
+// loadFEN initializes the game from a FEN string and refreshes legal moves and status flags.
+func (g *Game) loadFEN(fen string, variant Variant) error {
 	parts, ok := splitFENFields(fen)
 	if !ok {
 		return invalidFEN("expected six fields")
@@ -54,6 +57,8 @@ func (g *Game) LoadFEN(fen string) error {
 
 	parsed := Game{}
 	parsed.Reset()
+	parsed.variant = variant
+	parsed.castlingRookFrom = defaultCastlingRookFrom()
 
 	idx, rankIdx := 0, 0
 	whiteKings, blackKings := 0, 0
