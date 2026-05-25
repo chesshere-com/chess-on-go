@@ -9,3 +9,4 @@ bench-smoke.txt
 bench-*.txt
 coverage.out
 pgn_coverage.out
+.worktrees/
