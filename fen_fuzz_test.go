@@ -8,6 +8,8 @@ func FuzzLoadFENDoesNotPanic(f *testing.F) {
 		" ",
 		"8/8/8/8/8/8/8/8 w - - 0 1",
 		STARTING_POSITION_FEN,
+		"bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1",
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1",
 		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNRR w KQkq - 0 1",
 		"/////// w - - 0 1",
 		"not a fen",
@@ -28,5 +30,19 @@ func FuzzLoadFENDoesNotPanic(f *testing.F) {
 		}()
 		g := &Game{}
 		_ = g.LoadFEN(fen)
+	})
+}
+
+func FuzzLoadChess960FENDoesNotPanic(f *testing.F) {
+	f.Add("bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1")
+	f.Add("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1")
+	f.Fuzz(func(t *testing.T, fen string) {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				t.Fatalf("LoadFENWithVariant panicked for %q: %v", fen, recovered)
+			}
+		}()
+		g := &Game{}
+		_ = g.LoadFENWithVariant(fen, VariantChess960)
 	})
 }

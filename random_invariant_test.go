@@ -3,6 +3,7 @@ package chessongo
 import (
 	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -59,6 +60,26 @@ func TestEveryLegalMoveFromKnownPositionsMaintainsInvariantsAndUndoes(t *testing
 				require.Equal(t, startFen, g.ToFEN())
 				require.Equal(t, startHash, g.zobristHash)
 			}
+		})
+	}
+}
+
+func TestRandomChess960MakeUndoPreservesFEN(t *testing.T) {
+	for _, id := range []int{0, 42, 518, 959} {
+		t.Run(strconv.Itoa(id), func(t *testing.T) {
+			g, err := NewChess960Game(id)
+			require.NoError(t, err)
+			start := g.FEN()
+			moves := g.LegalMovesList()
+			require.NotEmpty(t, moves)
+
+			for _, move := range moves {
+				before := g.FEN()
+				g.MakeMove(move)
+				g.UndoMove(move)
+				require.Equal(t, before, g.FEN())
+			}
+			require.Equal(t, start, g.FEN())
 		})
 	}
 }
