@@ -27,7 +27,7 @@ func TestNewGameFromFENWithChess960VariantRecordsVariant(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, VariantChess960, g.Variant())
-	require.Equal(t, STARTING_POSITION_FEN, g.FEN())
+	require.Equal(t, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1", g.FEN())
 }
 
 func TestClonePreservesVariant(t *testing.T) {
