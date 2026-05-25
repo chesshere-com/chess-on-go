@@ -135,3 +135,23 @@ func TestPerftKnownPositionsDeep(t *testing.T) {
 		}
 	}
 }
+
+func TestChess960PerftSmoke(t *testing.T) {
+	tests := []struct {
+		name  string
+		fen   string
+		depth int
+		nodes uint64
+	}{
+		{name: "sp518-start-depth1", fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w HAha - 0 1", depth: 1, nodes: 20},
+		{name: "sp0-start-depth1", fen: "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1", depth: 1, nodes: 20},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &Game{}
+			require.NoError(t, g.LoadFENWithVariant(tt.fen, VariantChess960))
+			require.Equal(t, tt.nodes, perft(g, tt.depth))
+		})
+	}
+}
