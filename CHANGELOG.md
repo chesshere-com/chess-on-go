@@ -7,6 +7,10 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 
 ## Unreleased
 
+## v0.22.1 - 2026-05-31
+
+- Added MIT License to resolve pkg.go.dev license restrictions.
+
 ## v0.22.0 - 2026-05-25
 
 - Added explicit Chess960 support with position generation, Shredder-FEN
