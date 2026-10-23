@@ -7,6 +7,14 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 
 ## Unreleased
 
+## v0.22.2 - 2026-10-24
+
+- Launch the [documentation website](https://chesshere-com.github.io/chess-on-go/)
+  with usage guides, API guidance, six runnable examples, and performance
+  analysis. Add automated GitHub Pages builds and deployment.
+- Add an isolated, reproducible benchmark comparison against
+  `github.com/corentings/chess/v2` v2.6.1, including workload equivalence tests,
+  raw measurements, and explanations of API and feature differences.
 - Cache standard castling geometry, skip unavailable castling rights before
   building move data, and avoid copying variant rule tables in hot paths.
 - Remove redundant legal-move generation and candidate simulations from SAN
@@ -34,6 +42,17 @@ Releases use semantic version tags in the form `v*.*.*`, for example
   exclude defended king recaptures from static exchange evaluation.
 - Add regression tests, binary fuzzing, and PGN export/reload fuzz checks; fix
   scheduled CI fuzzing to target one package. Correct outdated API documentation.
+- Accept single-core benchmark output in the smoke check and propagate failed
+  benchmark commands through output-capture pipelines.
+
+### Upgrade notes
+
+- Public API signatures are unchanged. Malformed FEN, PGN, EPD, and binary
+  inputs that were previously accepted may now return errors.
+- Corrected en-passant hashing changes position keys for some positions.
+  Rebuild persisted repetition histories or hash tables when upgrading; position
+  keys and binary snapshots are intended for same-version use. Use FEN or PGN
+  for portable storage.
 
 ## v0.22.1 - 2026-05-31
 

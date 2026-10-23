@@ -59,6 +59,19 @@ Snapshots should include:
 
 Cached external move-list benchmarks are labeled separately. They are useful context, but they are not apples-to-apples regeneration benchmarks.
 
+## v0.22.2 release snapshot
+
+[The release snapshot](2026-10-24-snapshot.txt) records five samples of the
+move-generation, perft, and existing `notnil/chess` benchmarks on Go 1.25.8,
+darwin/arm64, Apple M5 Pro, with `GOMAXPROCS=1`. It measures the merged code at
+`938576b97b62cb773de1e0497b8fd60244f393d4`; subsequent release preparation changes
+only documentation and benchmark scripts.
+
+This snapshot is a baseline for future releases, not a paired before/after
+comparison. Its toolchain and measurement session differ from the audit and
+`corentings/chess` comparison below and on the website. Use the paired audit
+samples for the reported improvement figures.
+
 ## October 2026 package audit
 
 The audit covered move generation and traversal, move/undo state, cloning,
