@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>{{title}} · chess-on-go</title>
+  <meta name="description" content="{{description}}">
+  <meta property="og:title" content="{{title}} · chess-on-go">
+  <meta property="og:description" content="{{description}}">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://chesshere-com.github.io/chess-on-go/{{path}}">
+  <link rel="icon" href="{{root}}assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{root}}assets/site.css">
+  <script src="{{root}}assets/site.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="top">
+    <div class="top-inner">
+      <a class="brand" href="{{root}}index.html"><span class="brand-mark" aria-hidden="true">♞</span> chess-on-go</a>
+      <nav class="top-nav" aria-label="Main navigation">
+        {{topnav}}
+        <a href="https://github.com/chesshere-com/chess-on-go">GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+      <button class="theme-button" type="button" aria-label="Switch to light theme" title="Switch color theme" hidden>◐</button>
+    </div>
+  </header>
+  {{layout}}
+  <footer class="foot">
+    <div><a class="brand small" href="{{root}}index.html">chess-on-go</a><p>Chess rules, made for Go. MIT licensed.</p></div>
+    <div><span>Built for the game.</span><p>Powering <a href="https://www.chesshere.com">www.chesshere.com <span aria-hidden="true">↗</span></a></p></div>
+    <nav aria-label="Related projects"><a href="https://chesshere-com.github.io/chessboard/">chessboard ↗</a><a href="https://github.com/chesshere-com/chess-on-go">Source ↗</a><a href="https://pkg.go.dev/github.com/chesshere-com/chess-on-go">Go reference ↗</a></nav>
+  </footer>
+  <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
+</body>
+</html>

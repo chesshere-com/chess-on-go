@@ -1,0 +1,57 @@
+<main id="main" class="shell">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">The Go chess package from ChessHere</p>
+      <h1>Chess rules.<br>At Go speed.</h1>
+      <p class="lede">A small, focused rules library for your next chess app or engine. Legal moves, notation, variants, and fast tree traversal. Built around bitboards. Ready for real games.</p>
+      <code class="install">go get github.com/chesshere-com/chess-on-go</code>
+      <div class="cta"><a class="btn primary" href="docs/index.html">Read the docs <span aria-hidden="true">→</span></a><a class="btn" href="performance/index.html">Explore the benchmarks</a></div>
+    </div>
+    <div>
+      <div class="codeblock">
+        <div class="codeheading"><span>your-next-move.go</span><span>Go 1.25+</span></div>
+        <pre><code><span class="syn-comment">// Start a game. Play a line.</span>
+game := chessongo.NewGame()
+
+<span class="syn-keyword">for</span> _, san := <span class="syn-keyword">range</span> []<span class="syn-keyword">string</span>{
+    <span class="syn-string">"e4"</span>, <span class="syn-string">"e5"</span>, <span class="syn-string">"Nf3"</span>,
+} {
+    <span class="syn-keyword">if</span> err := game.TryMoveSAN(san); err != <span class="syn-keyword">nil</span> {
+        <span class="syn-keyword">return</span> err
+    }
+}
+
+fmt.Println(game.SideToMove())
+fmt.Println(len(game.LegalMovesInto(<span class="syn-keyword">nil</span>)))</code></pre>
+        <div class="terminal-output"><span>›</span> black<br><span>›</span> 29</div>
+      </div>
+      <p class="chart-note">Validate input. Inspect a position. Keep playing.<br><a href="examples/index.html#quickstart">See the complete, runnable example →</a></p>
+    </div>
+  </section>
+  <div class="stats" aria-label="Package facts">
+    <div class="stat"><strong>0</strong><span>runtime dependencies</span></div>
+    <div class="stat"><strong>4</strong><span>supported rule sets</span></div>
+    <div class="stat"><strong>Go 1.25+</strong><span>plain Go, no CGO</span></div>
+    <div class="stat"><strong>MIT</strong><span>open source</span></div>
+  </div>
+  <section class="section">
+    <p class="eyebrow">Everything a position needs</p>
+    <h2>From the first move to the final result.</h2>
+    <div class="features">
+      <div><span class="feature-number">01 / RULES</span><h3>Legal by construction</h3><p>Bitboard move generation, castling, en passant, promotion, checks, and automatic or claimable draws.</p></div>
+      <div><span class="feature-number">02 / NOTATION</span><h3>Speaks chess</h3><p>FEN, SAN, UCI coordinates, PGN main lines, and EPD suites. Structured errors for invalid positions and moves.</p></div>
+      <div><span class="feature-number">03 / STATE</span><h3>State you can trust</h3><p>Defensive snapshots, independent clones, exact move undo, and repetition-aware position keys.</p></div>
+      <div><span class="feature-number">04 / VARIANTS</span><h3>More ways to play</h3><p>Standard chess by default. Opt into Chess960, King of the Hill, or Three-check when your game calls for it.</p></div>
+      <div><span class="feature-number">05 / SEARCH</span><h3>Built for the hot path</h3><p>Magic sliding attacks, caller-owned move buffers, fast make/unmake, and a dedicated SearchBoard API.</p></div>
+      <div><span class="feature-number">06 / INTEGRATION</span><h3>Your application, your UI</h3><p>Use it in a Go service, a CLI, or an engine. Pair it with <a href="https://chesshere-com.github.io/chessboard/">chessboard</a> for a browser interface.</p></div>
+    </div>
+  </section>
+  <section class="section split">
+    <div><p class="eyebrow">Measured, with the details</p><h2>Performance you can reproduce.</h2><p class="subtle">Same positions. Verified node counts. Pinned library versions. Explore timings and allocations against corentings/chess, including where the results are close.</p><a href="performance/index.html">Read the comparison and methodology →</a></div>
+    <div>{{home-benchmark}}</div>
+  </section>
+  <section class="section split">
+    <div><p class="eyebrow">Start with something useful</p><h2>A few lines to your first game.</h2><p class="subtle">Complete examples live in the repository and compile with the package. Copy one, run it, and build from there.</p></div>
+    <div class="link-list"><a href="docs/index.html">Install &amp; play <span>Get started →</span></a><a href="examples/index.html#http">Validate moves over HTTP <span>Build a service →</span></a><a href="docs/search.html">Explore a move tree <span>Search &amp; perft →</span></a><a href="https://www.chesshere.com">Play on ChessHere <span>www.chesshere.com ↗</span></a></div>
+  </section>
+</main>

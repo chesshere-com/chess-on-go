@@ -1,0 +1,65 @@
+[
+  {
+    "path": "index.html",
+    "source": "home.html",
+    "title": "Fast chess rules for Go",
+    "description": "Bitboard chess rules for Go. Learn chess-on-go with runnable examples, API guides, and reproducible performance comparisons.",
+    "section": "Overview"
+  },
+  {
+    "path": "docs/index.html",
+    "source": "getting-started.html",
+    "title": "Getting started",
+    "description": "Install chess-on-go, play your first moves, and choose the right API for your Go application.",
+    "section": "Documentation"
+  },
+  {
+    "path": "docs/moves.html",
+    "source": "moves.html",
+    "title": "Moves & game state",
+    "description": "Validate UCI and SAN moves, handle promotion, inspect status, undo moves, and clone positions.",
+    "section": "Documentation"
+  },
+  {
+    "path": "docs/formats.html",
+    "source": "formats.html",
+    "title": "FEN, PGN & persistence",
+    "description": "Load and export positions, replay PGN, parse EPD suites, and persist game state.",
+    "section": "Documentation"
+  },
+  {
+    "path": "docs/variants.html",
+    "source": "variants.html",
+    "title": "Variants",
+    "description": "Use Chess960, King of the Hill, and Three-check through explicit variant APIs.",
+    "section": "Documentation"
+  },
+  {
+    "path": "docs/search.html",
+    "source": "search.html",
+    "title": "Search & perft",
+    "description": "Traverse legal move trees with reusable buffers and fast make/unmake operations.",
+    "section": "Documentation"
+  },
+  {
+    "path": "docs/api.html",
+    "source": "api.html",
+    "title": "API reference",
+    "description": "A practical map of constructors, moves, board accessors, notation, errors, and analysis APIs.",
+    "section": "Documentation"
+  },
+  {
+    "path": "examples/index.html",
+    "source": "examples.html",
+    "title": "Runnable examples",
+    "description": "Copy complete Go programs for game play, serialization, variants, search, and a chess HTTP endpoint.",
+    "section": "Examples"
+  },
+  {
+    "path": "performance/index.html",
+    "source": "performance.html",
+    "title": "Performance",
+    "description": "Measured comparison with corentings/chess v2.6.1, allocations, workload definitions, raw samples, and reproduction commands.",
+    "section": "Performance"
+  }
+]

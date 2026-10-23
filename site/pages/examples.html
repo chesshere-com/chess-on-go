@@ -1,0 +1,22 @@
+<p class="lede">Small, complete programs you can run from a repository checkout. The site includes their source directly, so the snippets stay in sync with the code that compiles in CI.</p>
+<div class="card-grid"><a class="doc-card" href="#quickstart"><h3>Play an opening</h3><p>Start a game, apply SAN moves, inspect state.</p></a><a class="doc-card" href="#http"><h3>A move-validation service</h3><p>Accept FEN and UCI; return the next position.</p></a><a class="doc-card" href="#formats"><h3>Load, replay, and save</h3><p>PGN, binary persistence, and EPD records.</p></a><a class="doc-card" href="#search"><h3>Count a move tree</h3><p>Perft and make/unmake with SearchBoard.</p></a></div>
+<h2 id="quickstart">Play an opening</h2>
+<p><code>go run ./examples/quickstart</code></p>
+{{example:quickstart}}
+<h2 id="http">Validate a move over HTTP</h2>
+<p><code>go run ./examples/http</code></p>
+<p>This stateless example accepts a JSON object with <code>fen</code> and <code>uci</code>. It creates a game per request, returns HTTP 400 for bad input or HTTP 422 for an illegal move, and emits the resulting FEN, turn, and legal UCI moves.</p>
+{{example:http}}
+<pre class="codeblock"><code>curl http://127.0.0.1:8080/move \
+  -H 'Content-Type: application/json' \
+  -d '{"fen":"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1","uci":"e2e4"}'</code></pre>
+<p>For a real multiplayer game, own the authoritative position and history on the server, and check whose turn it is. A client-supplied FEN is useful for analysis tools; it does not carry repetition history or authenticate a move.</p>
+<p>Feed the returned position into <a href="https://chesshere-com.github.io/chessboard/">chessboard</a> for rendering. Convert the legal UCI moves into its origin-to-destination map, and send promotion suffixes when the player chooses a piece.</p>
+<h2 id="formats">Load, replay, and save</h2>
+<p><code>go run ./examples/formats</code></p>
+{{example:formats}}
+<h2 id="search">Count a move tree</h2>
+<p><code>go run ./examples/search</code></p>
+{{example:search}}
+<h2 id="more">More examples</h2>
+<div class="link-list"><a href="{{root}}docs/moves.html#undo">Make and undo a legal move <span>examples/moves →</span></a><a href="{{root}}docs/variants.html#construct">Create three variant games <span>examples/variants →</span></a><a href="https://github.com/chesshere-com/chess-on-go/blob/main/example_test.go">Executable Go examples <span>example_test.go ↗</span></a></div>

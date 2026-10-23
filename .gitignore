@@ -10,3 +10,6 @@ bench-*.txt
 coverage.out
 pgn_coverage.out
 .worktrees/
+
+_site/
+__pycache__/

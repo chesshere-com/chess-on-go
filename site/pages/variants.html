@@ -1,0 +1,23 @@
+<p class="lede">Standard chess is the default. Enable a different rule set explicitly, and keep its variant metadata with every saved position.</p>
+<nav class="toc" aria-label="On this page"><a href="#supported">Supported rules</a><a href="#construct">Constructors</a><a href="#chess960">Chess960</a><a href="#hill">King of the Hill</a><a href="#threecheck">Three-check</a></nav>
+<h2 id="supported">Four implemented rule sets</h2>
+<div class="table-wrap"><table><thead><tr><th>Variant</th><th>Constant</th><th>Additional behavior</th></tr></thead><tbody>
+<tr><td>Standard</td><td><code>VariantStandard</code></td><td>Normal chess; used by <code>NewGame</code> and <code>LoadFEN</code>.</td></tr>
+<tr><td>Chess960</td><td><code>VariantChess960</code></td><td>960 starting positions and castling from different king/rook origins.</td></tr>
+<tr><td>King of the Hill</td><td><code>VariantKingOfTheHill</code></td><td>Win by bringing the king to a central square.</td></tr>
+<tr><td>Three-check</td><td><code>VariantThreeCheck</code></td><td>Win by giving the opponent a third check.</td></tr>
+</tbody></table></div>
+<p>Atomic, Antichess, Horde, and Crazyhouse have reserved enum values but are not implemented. The constructors reject them.</p>
+<h2 id="construct">Create a variant game</h2>
+{{example:variants}}
+<p><code>LoadFEN</code> always selects standard rules, even on an instance that previously held a variant. Use <code>LoadFENWithVariant</code> whenever loading variant-specific state.</p>
+<h2 id="chess960">Chess960</h2>
+<p><code>NewChess960Game(id)</code> accepts IDs 0–959. ID 518 has the classical back rank. <code>Chess960StartingFEN(id)</code> returns its setup FEN.</p>
+<p>Castling finishes on the usual king/rook squares: g1/f1 or c1/d1 for White, and g8/f8 or c8/d8 for Black. <code>FEN()</code> emits Shredder-FEN rook-file rights, such as <code>HAha</code> for ID 518.</p>
+<p>SAN uses <code>O-O</code> or <code>O-O-O</code>. UCI input accepts the Chess960 king-to-rook-square form. That explicit form avoids confusing a castle with an ordinary king step that has the same destination. Export PGN to preserve the <code>Variant</code>, <code>SetUp</code>, and <code>FEN</code> tags.</p>
+<h2 id="hill">King of the Hill</h2>
+<p>Standard movement remains in force. A king reaching <code>d4</code>, <code>e4</code>, <code>d5</code>, or <code>e5</code> wins immediately. Loaded positions are checked too. Insufficient material does not end a King of the Hill game, because reaching the center can still win.</p>
+<h2 id="threecheck">Three-check</h2>
+<p>Three-check FEN requires a seventh field: <code>+W+B</code>, the checks <em>given</em> by White and Black, from 0 to 3. The initial value is <code>+0+0</code>. Standard FEN loading rejects that extra field.</p>
+<p>Check counters survive FEN export, binary serialization, PGN setup tags, and make/undo. A third check produces <code>GameStatusVariantWin</code>; inspect <code>Winner()</code> for the winning side.</p>
+<div class="note"><code>PositionKey()</code> includes the active variant, Chess960 rook origins, and Three-check counters. Identical piece placement can have different legal meaning across variants.</div>

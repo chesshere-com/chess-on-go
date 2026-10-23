@@ -1,0 +1,26 @@
+<p class="lede">Chess rules, notation, and position analysis for Go. Start with <code>Game</code> for applications, or <code>SearchBoard</code> for tree traversal.</p>
+<nav class="toc" aria-label="On this page"><a href="#install">Install</a><a href="#first-game">Your first game</a><a href="#choose">Choose an API</a><a href="#cli">CLI</a></nav>
+<h2 id="install">Install</h2>
+<p>You need <strong>Go 1.25 or newer</strong>. The runtime package uses only the Go standard library. Dependencies in the root module support tests and comparisons.</p>
+<pre class="codeblock"><code>go get github.com/chesshere-com/chess-on-go</code></pre>
+<p>The import path is <code>github.com/chesshere-com/chess-on-go</code>; the package name is <code>chessongo</code>. Use the explicit alias below to keep examples easy to follow. Pin a released version in your application's <code>go.mod</code>.</p>
+<h2 id="first-game">Your first game</h2>
+<p>This complete program plays three half-moves, then prints the current FEN, side to move, and legal-move count.</p>
+{{example:quickstart}}
+<pre class="codeblock"><code>go run ./examples/quickstart</code></pre>
+<p>The command above runs from a checkout of this repository. In your own module, save the program as <code>main.go</code> and run <code>go run .</code>.</p>
+<div class="note"><strong>This site follows the merged audit revision.</strong> The performance page names the exact commit measured. If your installed release behaves differently, check its version and <a href="https://github.com/chesshere-com/chess-on-go/blob/main/CHANGELOG.md">the changelog</a>.</div>
+<h2 id="choose">Choose an API</h2>
+<div class="table-wrap"><table><thead><tr><th>You want to…</th><th>Use</th><th>Why</th></tr></thead><tbody>
+<tr><td>Build a game or server</td><td><code>Game</code> + <code>TryMove*</code></td><td>Validate input and maintain legal moves, check/mate, repetition, and PGN.</td></tr>
+<tr><td>Read a position</td><td><code>BoardView</code>, <code>Snapshot</code></td><td>Inspect defensive copies without exposing mutable internals.</td></tr>
+<tr><td>Branch an analysis</td><td><code>Clone</code></td><td>Keep an independent game with its current state and history.</td></tr>
+<tr><td>Traverse many positions</td><td><code>SearchBoard</code></td><td>Reuse move buffers and skip game-status and PGN bookkeeping.</td></tr>
+</tbody></table></div>
+<p>A <code>Game</code> is mutable and has no internal locking. Give each goroutine its own instance or clone, or synchronize access in your application. FEN captures a position, not its repetition history.</p>
+<h2 id="cli">Use the CLI</h2>
+<p>The optional command-line tool validates a FEN, lists legal moves, or counts a move tree:</p>
+<pre class="codeblock"><code>go run ./cmd/chessongo fen "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
+go run ./cmd/chessongo legal "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
+go run ./cmd/chessongo perft -depth 2 "4k3/8/8/8/8/8/8/4K3 w - - 0 1"</code></pre>
+<p>For a browser UI, use <a href="https://chesshere-com.github.io/chessboard/">ChessHere's chessboard component</a> and keep move validation in your Go service. The <a href="{{root}}examples/index.html#http">HTTP example</a> shows a stateless request/response boundary.</p>
