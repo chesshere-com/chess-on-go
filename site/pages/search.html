@@ -1,0 +1,21 @@
+<p class="lede">Use the search API when you need to visit many positions without maintaining a game's PGN, repetition history, or terminal-state bookkeeping.</p>
+<nav class="toc" aria-label="On this page"><a href="#perft">Count nodes</a><a href="#buffers">Buffers &amp; undo</a><a href="#see">Static exchanges</a><a href="#fast">Keep it fast</a></nav>
+<h2 id="perft">Count a legal move tree</h2>
+<p>Perft counts leaf positions after a fixed number of plies. It is a move-generation check, not a playing-strength benchmark. The initial position has 20, 400, 8,902, and 197,281 nodes at depths 1 through 4.</p>
+{{example:search}}
+<p><code>Perft(0)</code> returns 1. A negative depth returns 0. Traversal restores the root position before returning.</p>
+<h2 id="buffers">Move buffers belong to the caller</h2>
+<p><code>SearchBoard.LegalMoves(dst)</code> generates legal moves into the supplied storage. A buffer with enough capacity avoids a move-list allocation. Keep a separate buffer at each recursion level so child generation cannot overwrite the parent's moves.</p>
+<p><code>SearchBoard.MakeMove</code> assumes a legal move and must be paired with <code>UndoMove</code> in reverse order using the same move value. The board maintains piece placement and move state; it does not refresh repetition, PGN, checkmate, or draw status while traversing.</p>
+<div class="note">Use <code>Game.TryMove*</code> for a real game. <code>Game.MakeMoveFast</code> / <code>UndoMoveFast</code> are lower-level alternatives that also skip game-history bookkeeping. Do not mix fast traversal with application status queries.</div>
+<h2 id="see">Static exchange evaluation</h2>
+<p><code>Game.SEE(from, to)</code> estimates the material result of a swap sequence on a square. It is useful for move ordering and capture heuristics, not a full search or position evaluation. It uses the occupancy of the exchange sequence but a snapshot of pins; use the documented assumptions when integrating it into an engine.</p>
+<p>The package supplies rules and traversal primitives, not an engine protocol client, evaluation function, transposition table, or search algorithm. <code>PositionKey()</code> is available for your own hash tables.</p>
+<h2 id="fast">Keep allocations out of the loop</h2>
+<ul>
+<li>Reuse a <code>SearchBoard</code> and one move buffer per depth.</li>
+<li>Use move values in the search loop. Format SAN or FEN at presentation boundaries.</li>
+<li>Use full <code>Game</code> instances where repetition and game state matter.</li>
+<li>Measure your own workload with <code>-benchmem</code>; cold setup and warmed traversal have different allocation costs.</li>
+</ul>
+<p>The <a href="{{root}}performance/index.html">performance report</a> includes separate cold FEN loading, warmed traversal, cached move copying, and notation benchmarks.</p>

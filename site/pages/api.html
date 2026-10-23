@@ -1,0 +1,43 @@
+<p class="lede">The public API at a glance. This guide explains the common choices; the generated Go reference includes every exported declaration.</p>
+<p><a class="btn primary" href="https://pkg.go.dev/github.com/chesshere-com/chess-on-go">Open the Go reference ↗</a></p>
+<h2 id="constructors">Constructors and loading</h2>
+<div class="table-wrap"><table><thead><tr><th>API</th><th>Behavior</th></tr></thead><tbody>
+<tr><td><code>NewGame() *Game</code></td><td>Standard initial position.</td></tr>
+<tr><td><code>NewGameFromFEN(fen) (*Game, error)</code></td><td>Validated standard position.</td></tr>
+<tr><td><code>NewGameFromFENWithVariant(fen, variant)</code></td><td>Validated position with an explicit rule set.</td></tr>
+<tr><td><code>NewChess960Game(id)</code></td><td>Chess960 position ID 0–959.</td></tr>
+<tr><td><code>LoadFEN</code>, <code>LoadFENWithVariant</code>, <code>LoadPGN</code></td><td>Replace an existing game with loaded state.</td></tr>
+<tr><td><code>Clone() *Game</code></td><td>Independent copy, including cached moves and mutable history.</td></tr>
+</tbody></table></div>
+<h2 id="moves">Move handling</h2>
+<div class="table-wrap"><table><thead><tr><th>API</th><th>Behavior</th></tr></thead><tbody>
+<tr><td><code>LegalMovesInto(dst []Move) []Move</code></td><td>Copy cached legal moves to caller-owned storage. Reuses capacity.</td></tr>
+<tr><td><code>LegalMovesList() []Move</code></td><td>Return an independent legal-move slice.</td></tr>
+<tr><td><code>TryMove</code>, <code>TryMoveUCI</code>, <code>TryMoveSAN</code>, <code>TryMoveFromCoords</code></td><td>Validate and apply a move.</td></tr>
+<tr><td><code>ParseMoveSAN</code>, <code>ParseMoveUCI</code></td><td>Resolve legal SAN, or parse a UCI request, without applying it.</td></tr>
+<tr><td><code>MakeMove</code>, <code>UndoMove</code></td><td>Apply a known legal move; undo the actual move in reverse order.</td></tr>
+<tr><td><code>Move.From()</code>, <code>To()</code>, <code>UCI()</code></td><td>Read coordinates and format a move.</td></tr>
+</tbody></table></div>
+<h2 id="state">State and board access</h2>
+<div class="table-wrap"><table><thead><tr><th>API</th><th>Behavior</th></tr></thead><tbody>
+<tr><td><code>FEN</code>, <code>SideToMove</code>, <code>HalfMoveClock</code>, <code>FullMoveNumber</code></td><td>Position and counters.</td></tr>
+<tr><td><code>Status</code>, <code>IsTerminal</code>, <code>Winner</code>, <code>Variant</code></td><td>Game and variant state.</td></tr>
+<tr><td><code>DrawStatus</code></td><td>Claimable and automatic draw conditions.</td></tr>
+<tr><td><code>Board</code>, <code>BoardView</code>, <code>Snapshot</code></td><td>Defensive copies for inspection.</td></tr>
+<tr><td><code>PieceAt</code>, <code>Pieces</code>, <code>PiecesOfKind</code>, <code>OccupiedSquares</code></td><td>Piece and bitboard access.</td></tr>
+<tr><td><code>EnPassantSquare</code>, <code>CastlingRights</code></td><td>Special-move state. For Chess960 rook-file metadata use FEN.</td></tr>
+<tr><td><code>SeedPositionHistory(priorKeys []uint64)</code></td><td>Restore prior same-version repetition keys after loading FEN. Exclude the current position, which is already recorded.</td></tr>
+<tr><td><code>PositionKey() uint64</code></td><td>Same-version Zobrist key. Not a durable identifier.</td></tr>
+</tbody></table></div>
+<h2 id="formats">Formats and analysis</h2>
+<div class="table-wrap"><table><thead><tr><th>API</th><th>Behavior</th></tr></thead><tbody>
+<tr><td><code>PGN</code>, <code>PGNTags</code>, <code>PGNResult</code></td><td>Export played main line and metadata.</td></tr>
+<tr><td><code>ParseEPD</code>, <code>LoadEPDRecords</code></td><td>Read annotated position records.</td></tr>
+<tr><td><code>MarshalBinary</code>, <code>UnmarshalBinary</code></td><td>Same-version board and repetition persistence.</td></tr>
+<tr><td><code>NewSearchBoard</code></td><td>FEN constructor for standard search traversal.</td></tr>
+<tr><td><code>SearchBoard.LegalMoves</code>, <code>MakeMove</code>, <code>UndoMove</code>, <code>Perft</code></td><td>Generation and fast traversal without game bookkeeping.</td></tr>
+<tr><td><code>Game.SEE(from, to) int</code></td><td>Material-only static exchange estimate.</td></tr>
+</tbody></table></div>
+<h2 id="errors">Errors and compatibility</h2>
+<p>Use <code>errors.Is</code> with <code>ErrInvalidFEN</code>, <code>ErrIllegalMove</code>, or <code>ErrInvalidMoveNotation</code>. Use <code>errors.As</code> for <code>*FENError</code> and <code>*IllegalMoveError</code> when you need more detail.</p>
+<p>Game fields are private. Prefer the method API above. Legacy lookup maps and low-level mutation helpers exist for compatibility; avoid building new integrations around them. Read the <a href="https://github.com/chesshere-com/chess-on-go/blob/main/docs/compatibility.md">compatibility policy</a> for versioning and persistence guarantees.</p>

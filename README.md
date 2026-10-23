@@ -6,6 +6,9 @@ draw-rule tracking, binary serialization, and search-oriented traversal helpers.
 
 This package powers [www.chesshere.com](https://www.chesshere.com).
 
+[Documentation website](https://chesshere-com.github.io/chess-on-go/) ·
+[Runnable examples](examples/) · [Performance comparison](benchmarks/corentings/)
+
 ## Features
 
 - Standard chess legal move generation using bitboards.

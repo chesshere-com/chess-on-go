@@ -1,0 +1,55 @@
+<p class="lede">A workload-by-workload comparison with <a href="https://github.com/CorentinGS/chess/tree/v2.6.1">corentings/chess v2.6.1</a>. Timings, allocations, and the code to reproduce them.</p>
+<nav class="toc" aria-label="On this page"><a href="#results">Results</a><a href="#methodology">Methodology</a><a href="#analysis">Analysis</a><a href="#capabilities">Capabilities</a><a href="#reproduce">Reproduce</a></nav>
+<div class="method-grid"><div><strong>Measured</strong>24 October 2026 · Apple M5 Pro</div><div><strong>Runtime</strong>Go 1.27.1 · darwin/arm64 · GOMAXPROCS=1</div><div><strong>chess-on-go</strong><a href="https://github.com/chesshere-com/chess-on-go/commit/fc6ae9c6837ff8d2748bd6e66a1bdba87df9890e">fc6ae9c</a> · merged audit revision</div><div><strong>corentings/chess</strong><a href="https://github.com/CorentinGS/chess/releases/tag/v2.6.1">v2.6.1</a> · latest release at measurement</div></div>
+<h2 id="results">Measured results</h2>
+<p>Eight samples per case, 250 ms minimum per sample, medians below. Lower time and allocation counts are better. Each benchmark uses public APIs and consumes its output.</p>
+{{benchmark-chart}}
+{{benchmark-table}}
+<p class="subtle">Time ratios are descriptive medians, not statistical significance claims. The raw timing ranges for FEN export overlap: treat that result as similar performance. These measurements describe these positions and APIs on one machine, not a universal speedup.</p>
+<p><a href="{{root}}benchmarks/2026-10-24-corentings.txt" download>Download all raw samples ↓</a> · <a href="https://github.com/chesshere-com/chess-on-go/tree/7961deaedc2dc5babf54aedc6d16228c1c3e5646/benchmarks/corentings">Read the benchmark source ↗</a></p>
+<h2 id="methodology">What each workload measures</h2>
+<div class="table-wrap"><table><thead><tr><th>Workload</th><th>Timing boundary and API choices</th></tr></thead><tbody>
+<tr><td>Load FEN + legal moves</td><td>Parse FEN and construct a game inside every timed iteration, then access its moves. chess-on-go uses <code>NewGameFromFEN</code> and <code>LegalMovesInto</code> with a reusable buffer. corentings uses <code>FEN</code>, <code>NewGame</code>, and <code>ValidMovesUnsafe</code>. Constructor validation and bookkeeping differ; this is an end-to-end API workload, not isolated generator timing.</td></tr>
+<tr><td>Perft</td><td>Initial position, depth 4 (197,281 leaves); Kiwipete, depth 3 (97,862 leaves). chess-on-go uses <code>SearchBoard.Perft</code>; corentings uses <code>Position.Update</code> and the non-copying <code>ValidMovesUnsafe</code>. Both bulk-count depth one and skip PGN and draw history. Root setup and warm-up are excluded.</td></tr>
+<tr><td>FEN export</td><td>Serialize the already-loaded initial position. Setup is excluded; the returned string is retained.</td></tr>
+<tr><td>Cached legal moves, copy</td><td>Copy an already-computed initial-position move list: <code>LegalMovesInto(nil)</code> versus <code>ValidMoves()</code>. Both allocate defensive slices. This measures copy cost and representation size, not move generation. Both libraries also offer ways to avoid this allocation.</td></tr>
+<tr><td>Parse SAN</td><td>Decode <code>Nf3</code> in the initial position with legal moves already cached. No move is applied. <code>ParseMoveSAN</code> versus <code>AlgebraicNotation.Decode</code>.</td></tr>
+<tr><td>Load PGN</td><td>Parse the same unannotated 15-ply main line from scratch. chess-on-go uses <code>LoadPGN</code>; corentings uses <code>PGN</code> and <code>NewGame</code>. Both end at the same FEN, but corentings builds a richer move tree.</td></tr>
+</tbody></table></div>
+<p>The comparison is a separate Go module with a pinned dependency and a local <code>replace</code> for chess-on-go. It adds no runtime dependency to the package. Before timing, tests check identical legal move sets, expected perft counts, unchanged roots, SAN resolution, and the final PGN position.</p>
+<p>The cases ran sequentially in one benchmark process, without parallel test or fuzz jobs. Sample order was fixed, not randomized. The report does not cover every position, variant, compiler, architecture, or annotated PGN workload.</p>
+<h2 id="analysis">Why the numbers differ</h2>
+<ul>
+<li><strong>Traversal favors mutable board state.</strong> chess-on-go makes and unmakes moves in place, reuses undo storage, and writes generated moves into local buffers. corentings creates child positions and uses larger move structures. Its non-copying move-list API is used here to avoid penalizing it for unnecessary defensive copies.</li>
+<li><strong>Zero allocations is a warmed-traversal result.</strong> SearchBoard construction and its first undo-storage growth happen before timing. Cold setup still allocates.</li>
+<li><strong>SAN parsing avoids candidate simulations.</strong> chess-on-go filters by destination and matches legal candidates using stack buffers. This benchmark is one simple, non-capturing SAN move; it does not represent all SAN inputs.</li>
+<li><strong>PGN does different amounts of work.</strong> chess-on-go stores a played main line. corentings also supports annotations and variation trees. Compare the functionality your application needs alongside the timing.</li>
+<li><strong>FEN export is close.</strong> The median times are similar despite fewer allocations in chess-on-go. No blanket “faster everywhere” conclusion follows from this report.</li>
+</ul>
+<h2 id="capabilities">Choose the right scope</h2>
+<p>Both libraries provide standard chess rules and notation. corentings/chess offers a wider toolkit; chess-on-go concentrates on game state, explicit variants, and traversal.</p>
+<div class="table-wrap"><table><thead><tr><th>Capability</th><th>chess-on-go</th><th>corentings/chess v2.6.1</th></tr></thead><tbody>
+<tr><td>Standard rules, FEN, SAN, UCI coordinates</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>PGN</td><td>Main-line import/export; skips comments, NAGs, and variations</td><td>Move tree with comments and variations</td></tr>
+<tr><td>Chess960 / King of the Hill / Three-check</td><td>Explicit rule variants</td><td>No corresponding variant constructors in the compared API</td></tr>
+<tr><td>Search traversal</td><td>Mutable SearchBoard with make/unmake and perft</td><td>Position.Update creates child positions; move caches and iterators</td></tr>
+<tr><td>EPD suites</td><td>Typed bm/am/id/perft helpers</td><td>No corresponding EPD record API in the compared package</td></tr>
+<tr><td>UCI engine process client</td><td>Not included; UCI coordinates only</td><td>Separate <code>uci</code> package</td></tr>
+<tr><td>Opening books and board images</td><td>Not included</td><td><code>opening</code> and <code>image</code> packages</td></tr>
+<tr><td>License</td><td>MIT</td><td>MIT</td></tr>
+</tbody></table></div>
+<p>Capability sources: <a href="https://github.com/CorentinGS/chess/blob/v2.6.1/README.md">corentings README</a>, <a href="https://github.com/CorentinGS/chess/blob/v2.6.1/position.go">position APIs</a>, and <a href="https://github.com/CorentinGS/chess/blob/v2.6.1/game.go">game / PGN APIs</a>. “No corresponding API” describes the inspected release, not an assessment of future plans.</p>
+<h2 id="reproduce">Run it yourself</h2>
+<pre class="codeblock"><code>git clone https://github.com/chesshere-com/chess-on-go.git
+cd chess-on-go
+# Exact measured engine plus comparison harness:
+git checkout 7961deaedc2dc5babf54aedc6d16228c1c3e5646
+cd benchmarks/corentings
+go test ./...
+GOMAXPROCS=1 go test -run '^TestEquivalentWorkloads$' \
+  -bench '^BenchmarkCompare$' -benchmem -benchtime=250ms -count=8 .</code></pre>
+<p>The source's <code>go.mod</code> pins corentings/chess to v2.6.1 and uses the local checkout for chess-on-go. The pinned checkout above adds only the harness and benchmark documentation to <code>fc6ae9c</code>, preserving the exact measured engine. Use your current checkout instead to measure later changes.</p>
+<p>For your own changes, keep the compiler, machine, positions, and timing boundaries constant. Collect repeated samples and use <code>benchstat</code> to evaluate differences instead of comparing single runs.</p>
+<h2 id="audit">The optimization audit</h2>
+<p>The preceding package audit reduced repeated castling calculations, SAN candidate simulations, FEN formatting allocations, and variant-rule copies. It also fixed state, parsing, repetition, draw-rule, and serialization defects.</p>
+<p><a href="https://github.com/chesshere-com/chess-on-go/blob/main/docs/benchmarks/README.md">Read the audit's before/after measurements</a>. Those were a separate experiment with different timing conditions; do not combine their absolute times with this comparison. The audit passed race and static checks, deep perft, randomized invariants, and more than one million combined fuzz executions.</p>

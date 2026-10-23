@@ -1,0 +1,36 @@
+<p class="lede">Accept moves through the validating APIs. Use snapshots to inspect state, and keep the exact legal move when you need to undo it.</p>
+<nav class="toc" aria-label="On this page"><a href="#notation">Notation</a><a href="#undo">Make &amp; undo</a><a href="#inspect">Inspect</a><a href="#status">Status &amp; draws</a></nav>
+<h2 id="notation">UCI coordinates and SAN</h2>
+<div class="table-wrap"><table><thead><tr><th>Input</th><th>Apply</th><th>Examples</th></tr></thead><tbody>
+<tr><td>UCI coordinate string</td><td><code>game.TryMoveUCI(text)</code></td><td><code>e2e4</code>, <code>e1g1</code>, <code>a7a8q</code></td></tr>
+<tr><td>Standard algebraic notation</td><td><code>game.TryMoveSAN(text)</code></td><td><code>Nf3</code>, <code>O-O</code>, <code>exd5</code>, <code>Qh5+</code></td></tr>
+<tr><td>Coordinates</td><td><code>game.TryMoveFromCoords(from, to, promotion...)</code></td><td><code>"a7", "a8", chessongo.QUEEN</code></td></tr>
+<tr><td>Move value</td><td><code>game.TryMove(move)</code></td><td>A request or a move from the current legal-move list.</td></tr>
+</tbody></table></div>
+<p><code>ParseMoveSAN</code> matches against legal moves in the current position. <code>ParseMoveUCI</code> parses a request, including variant-aware castling, but does not establish that the move is legal; apply it with <code>TryMove</code>. A UCI promotion needs its piece suffix.</p>
+<p>SAN parsing tolerates trailing <code>+</code>, <code>#</code>, <code>!</code>, and <code>?</code> annotations and zero-based castling such as <code>0-0</code>. These suffixes are not assertions about the resulting position.</p>
+<h2 id="undo">Make a move, then undo it</h2>
+{{example:moves}}
+<p><code>MakeMove</code> assumes its argument is legal. Prefer <code>TryMove*</code> at input boundaries. To undo captures, promotions, en passant, or castling, retain the exact legal move including its flags, and undo moves in reverse order. Do not substitute an arbitrary coordinate-only request for the actual move.</p>
+<h2 id="inspect">Inspect without sharing mutable state</h2>
+<pre class="codeblock"><code>view := game.BoardView()
+e1, err := chessongo.ParseSquare("e1")
+if err != nil {
+    return err
+}
+piece, validSquare := view.PieceAt(e1)
+
+snapshot := game.Snapshot()
+analysis := game.Clone()</code></pre>
+<p><code>PieceAt</code>'s boolean indicates a valid square, not whether it contains a piece; an empty square returns <code>EMPTY, true</code>. <code>Board()</code> returns an array copy. <code>Snapshot()</code> copies public state and legal moves. <code>Clone()</code> independently copies the complete game state.</p>
+<p>Square indices run from <code>a8 = 0</code> to <code>h1 = 63</code>. Prefer <code>ParseSquare</code> and <code>Square.String</code> instead of relying on numeric indices or mutating the compatibility lookup maps. <code>EnPassantSquare()</code> returns zero when no target is present.</p>
+<h2 id="status">Game status and draw claims</h2>
+<p><code>Status()</code> distinguishes an ongoing game, check, checkmate, stalemate, automatic draw, and variant win. <code>IsTerminal()</code> is useful at the application boundary. For variant wins, inspect <code>Winner()</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Rule</th><th>Read</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Threefold repetition</td><td><code>DrawStatus().CanClaimThreefoldRepetition</code></td><td>A player may claim a draw.</td></tr>
+<tr><td>50 moves without pawn move or capture</td><td><code>DrawStatus().CanClaimFiftyMoveRule</code></td><td>A player may claim a draw.</td></tr>
+<tr><td>Fivefold repetition</td><td><code>DrawStatus().FivefoldRepetition</code></td><td>Automatic draw.</td></tr>
+<tr><td>75 moves without pawn move or capture</td><td><code>DrawStatus().SeventyFiveMoveRule</code></td><td>Automatic draw, subject to checkmate precedence.</td></tr>
+<tr><td>Insufficient material</td><td><code>DrawStatus().InsufficientMaterial</code></td><td>Evaluated under the active variant's rules.</td></tr>
+</tbody></table></div>
+<p>The library exposes claim eligibility; your app owns draw offers, claim acceptance, clocks, and player permissions. Use <code>PositionKey()</code> for same-version position comparisons and hash tables, and FEN for durable cross-version position interchange.</p>

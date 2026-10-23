@@ -1,0 +1,37 @@
+<p class="lede">Use text formats for interoperability and binary data for same-version position persistence. Each format preserves a different part of the game.</p>
+<nav class="toc" aria-label="On this page"><a href="#fen">FEN</a><a href="#pgn">PGN</a><a href="#epd">EPD</a><a href="#binary">Binary</a><a href="#example">Example</a></nav>
+<h2 id="fen">FEN: one position</h2>
+<p><code>NewGameFromFEN</code> constructs a standard game. <code>LoadFEN</code> validates the input before replacing an existing game's state; <code>FEN</code> exports it. Load variant positions with <code>LoadFENWithVariant</code>.</p>
+<pre class="codeblock"><code>game, err := chessongo.NewGameFromFEN(
+    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+)
+if err != nil {
+    return err
+}
+fmt.Println(game.FEN())</code></pre>
+<p>Validation checks board shape, kings, pawns on promotion ranks, castling metadata, en-passant fields, counters, and position legality. An en-passant target may be present without a legal capture; repetition hashing includes it only when a legal capture exists.</p>
+<pre class="codeblock"><code>var fenErr *chessongo.FENError
+if errors.Is(err, chessongo.ErrInvalidFEN) {
+    // Report invalid position input.
+}
+if errors.As(err, &amp;fenErr) {
+    fmt.Println(fenErr.Field)
+}</code></pre>
+<p>FEN has no move history or prior repetition counts. Loading it starts a new history. If your app stores prior same-version position keys, call <code>SeedPositionHistory(priorKeys)</code> after loading; exclude the current position because loading already records it. Move counters saturate at the platform's maximum <code>int</code> instead of wrapping.</p>
+<h2 id="pgn">PGN: a played main line</h2>
+<p><code>LoadPGN</code> applies the main line, accepts attached move numbers, tag pairs, setup FEN, results, comments, NAGs, and nested variations. <strong>Comments, NAGs, and variations are skipped, not preserved.</strong> Use <code>PGN()</code>, <code>PGNTags()</code>, and <code>PGNResult()</code> for export.</p>
+<p>Custom starting positions and supported variants produce setup tags. Result tags and movetext must agree; contradictory terminal results, unknown variants, and moves after a result are rejected.</p>
+<div class="note">Need to edit and round-trip annotated variation trees? <a href="https://github.com/CorentinGS/chess/tree/v2.6.1">corentings/chess</a> has a broader PGN model. chess-on-go focuses on playing and exporting the main line. See the <a href="{{root}}performance/index.html#capabilities">capability comparison</a>.</div>
+<h2 id="epd">EPD: annotated positions</h2>
+<p><code>ParseEPD</code> accepts an EPD record: the first four FEN fields followed by semicolon-delimited operations. Quoted operands may contain semicolons and escaped quotes. <code>LoadEPDRecords</code> reads multiple records from an <code>io.Reader</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Helper</th><th>Use</th></tr></thead><tbody>
+<tr><td><code>BestMoves()</code> / <code>AvoidMoves()</code></td><td>Read <code>bm</code> / <code>am</code> operands as notation strings.</td></tr>
+<tr><td><code>ID()</code></td><td>Read a record's optional identifier.</td></tr>
+<tr><td><code>PerftExpectations()</code></td><td>Read depth-to-node-count expectations.</td></tr>
+<tr><td><code>record.FEN</code></td><td>Get normalized FEN including counters.</td></tr>
+</tbody></table></div>
+<h2 id="binary">Binary: current state and repetition</h2>
+<p><code>MarshalBinary</code> / <code>UnmarshalBinary</code> preserve the current board, active variant, variant counters, castling metadata, move counters, and repetition counts. They do <strong>not</strong> save the played PGN or the undo stack. Treat the format and position keys as same-version data; prefer FEN/PGN for stable interchange.</p>
+<p>The decoder validates the position before replacing state. Encoding rejects counters or repetition values outside the format's unsigned 32-bit range.</p>
+<h2 id="example">Round-trip a position</h2>
+{{example:formats}}

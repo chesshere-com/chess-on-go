@@ -1,0 +1,77 @@
+name: Documentation site
+
+on:
+  push:
+    # The docs branch publishes the initial site; main maintains it after merge.
+    branches: [main, codex/documentation-site]
+    paths:
+      - "site/**"
+      - "scripts/build_site.py"
+      - "examples/**"
+      - "benchmarks/corentings/**"
+      - "docs/benchmarks/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "scripts/build_site.py"
+      - "examples/**"
+      - "benchmarks/corentings/**"
+      - "docs/benchmarks/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache-dependency-path: |
+            go.sum
+            benchmarks/corentings/go.sum
+      - name: Check examples
+        run: |
+          go test ./examples/...
+          for example in quickstart moves formats variants search; do
+            go run "./examples/$example"
+          done
+      - name: Check benchmark equivalence
+        working-directory: benchmarks/corentings
+        run: go test ./...
+      - name: Build and validate local links
+        run: python3 scripts/build_site.py
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/codex/documentation-site')
+    needs: build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
