@@ -1,7 +1,5 @@
 package chessongo
 
-import "strings"
-
 /*
  1. moving piece letter(exclude pawn)
     1.1 originating file letter of the moving piece
@@ -16,69 +14,76 @@ func (g *Game) GetMoveSan(m Move) string {
 	pgn := g.GetMoveSanWithoutSuffix(m)
 
 	clone := *g
-	clone.legalMoves = nil
-	clone.pseudoMoves = nil
-	clone.history = nil
-	clone.makeMoveInternal(m, false, true)
-	isCheckmate := clone.isCheck && !clone.hasMoves()
-	isCheck := clone.isCheck
-	if isCheckmate {
-		pgn += "#"
-	} else if isCheck {
-		pgn += "+"
+	clone.justMove(m)
+	clone.turn = oppositeColor(g.turn)
+	if !clone.ComputeIsCheck() {
+		return pgn
 	}
 
-	return pgn
+	if !g.moveHasLegalReply(m) {
+		return pgn + "#"
+	}
+	return pgn + "+"
+}
+
+func (g *Game) moveHasLegalReply(m Move) bool {
+	// Keep this allocation-capable path separate so formatting an ordinary
+	// non-checking move needs only a stack copy of the board.
+	clone := *g
+	var history [1]GameState
+	clone.history = history[:0]
+	clone.makeMoveNoGenerate(m)
+	var moves [maxGeneratedMoves]Move
+	return clone.generateLegalMovesArray(&moves) != 0
 }
 
 // GetMoveSanWithoutSuffix returns the SAN notation for a move without checking for check (+) or checkmate (#).
 // This prevents expensive board cloning and is sufficient for PGN parsing matching.
 func (g *Game) GetMoveSanWithoutSuffix(m Move) string {
-	var sb strings.Builder
-	from := m.From()
-	to := m.To()
+	var buffer [16]byte
+	return string(g.appendMoveSAN(buffer[:0], m))
+}
 
+func (g *Game) matchesSAN(m Move, san string) bool {
+	var buffer [16]byte
+	return string(g.appendMoveSAN(buffer[:0], m)) == san
+}
+
+func (g *Game) appendMoveSAN(dst []byte, m Move) []byte {
+	from, to := m.From(), m.To()
 	if m.IsCastlingMove() {
-		if m.To() == WKS_KING_TO_SQUARE || m.To() == BKS_KING_TO_SQUARE {
-			return "O-O"
+		if to == WKS_KING_TO_SQUARE || to == BKS_KING_TO_SQUARE {
+			return append(dst, "O-O"...)
 		}
-		if m.To() == WQS_KING_TO_SQUARE || m.To() == BQS_KING_TO_SQUARE {
-			return "O-O-O"
-		}
-	} else {
-		movingKind := g.squares[from].Kind()
-		if movingKind != PAWN { // -------> 1.
-			sb.WriteString(strings.ToUpper(string(g.squares[from].ToRune())))
-		}
+		return append(dst, "O-O-O"...)
+	}
 
-		// Disambiguation:
-		othersOfSameKind, onSameFileCount, onSameRankCount := g.GetOthersOfSameKindMovingToSameTargetCounts(m)
-		if othersOfSameKind > 0 && movingKind != PAWN {
-			if onSameFileCount == 0 {
-				sb.WriteString(m.From().FileLetter()) // -------> 1.1
-			} else if onSameRankCount == 0 {
-				sb.WriteString(m.From().RankDigit()) // -------> 1.2
-			} else {
-				sb.WriteString(m.From().Coords()) // -------> 1.3
+	kind := g.squares[from].Kind()
+	if kind != PAWN {
+		dst = append(dst, " PNBRQK"[kind])
+		others, sameFile, sameRank := g.GetOthersOfSameKindMovingToSameTargetCounts(m)
+		if others > 0 {
+			switch {
+			case sameFile == 0:
+				dst = append(dst, byte('a'+from.File()))
+			case sameRank == 0:
+				dst = append(dst, byte('8'-from.Rank()))
+			default:
+				dst = append(dst, from.Coords()...)
 			}
 		}
-
-		isCapturing := m.GetCapturedPiece() != EMPTY
-		if isCapturing && movingKind == PAWN {
-			sb.WriteString(from.FileLetter()) // -------> 2.
-		}
-		if isCapturing {
-			sb.WriteString("x") // -------> 3.
-		}
-
-		sb.WriteString(to.Coords()) // -------> 4.
-
-		if m.IsPromotionMove() {
-			sb.WriteString("=")
-			sb.WriteString(strings.ToUpper(string((m.GetPromotionTo() | WHITE).ToRune()))) // -------> 5.
-		}
 	}
-	return sb.String()
+	if m.GetCapturedPiece() != EMPTY {
+		if kind == PAWN {
+			dst = append(dst, byte('a'+from.File()))
+		}
+		dst = append(dst, 'x')
+	}
+	dst = append(dst, to.Coords()...)
+	if m.IsPromotionMove() {
+		dst = append(dst, '=', " PNBRQK"[m.GetPromotionTo()])
+	}
+	return dst
 }
 
 func (g *Game) GetOthersOfSameKindMovingToSameTargetCounts(themove Move) (otherOfSameKind int, onSameFileCount int, onSameRankCount int) {
@@ -86,7 +91,7 @@ func (g *Game) GetOthersOfSameKindMovingToSameTargetCounts(themove Move) (otherO
 	from := themove.From()
 	to := themove.To()
 	for _, m := range g.legalMoves {
-		if m == themove || m.To() != to || g.squares[m.From()].Kind() != movingPiece.Kind() {
+		if m.From() == from || m.IsCastlingMove() || m.To() != to || g.squares[m.From()].Kind() != movingPiece.Kind() {
 			continue
 		}
 		otherOfSameKind += 1

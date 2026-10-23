@@ -2,6 +2,7 @@ package chessongo
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"unicode"
@@ -47,17 +48,23 @@ func (g *Game) LoadPGN(pgn string) error {
 			continue
 		}
 		if isPGNResult(tok) {
+			if movetextResult != "" {
+				return fmt.Errorf("multiple pgn result markers")
+			}
 			movetextResult = tok
 			continue
 		}
 		// Skip move numbers and NAGs.
-		if strings.Contains(tok, "..") || strings.Contains(tok, ".") || strings.HasPrefix(tok, "$") {
+		if strings.HasPrefix(tok, "$") {
 			continue
 		}
 
-		tok = trimSANAnnotations(tok)
+		tok = normalizeSANInput(trimSANAnnotations(tok))
 		if tok == "" {
 			continue
+		}
+		if movetextResult != "" {
+			return fmt.Errorf("pgn move after result: %s", tok)
 		}
 
 		target := getTargetSquare(tok)
@@ -71,8 +78,7 @@ func (g *Game) LoadPGN(pgn string) error {
 
 			// Optimization: GetMoveSanWithoutSuffix avoids cloning the board (to check for check/mate)
 			// which is very expensive. We strip annotations from the token anyway.
-			san := trimSANAnnotations(loaded.GetMoveSanWithoutSuffix(mv))
-			if san == tok {
+			if loaded.matchesSAN(mv, tok) {
 				loaded.MakeMove(mv)
 				matched = true
 				break
@@ -120,6 +126,9 @@ func cloneStringMap(src map[string]string) map[string]string {
 
 func pgnVariant(tag string) Variant {
 	normalized := normalizeVariantName(tag)
+	if normalized == "" {
+		return VariantStandard
+	}
 	for _, variant := range []Variant{VariantStandard, VariantChess960, VariantKingOfTheHill, VariantThreeCheck} {
 		rules := rulesForVariant(variant)
 		for _, name := range rules.pgnNames {
@@ -128,7 +137,7 @@ func pgnVariant(tag string) Variant {
 			}
 		}
 	}
-	return VariantStandard
+	return Variant(255)
 }
 
 func normalizeVariantName(name string) string {
@@ -150,6 +159,18 @@ func (g *Game) PGNTags() map[string]string {
 	tags := cloneStringMap(g.pgnTags)
 	if tags == nil {
 		tags = map[string]string{}
+	}
+	// A FEN-loaded game can be exported before its first move. Preserve its
+	// starting position and variant even before recordPGNMove initializes tags.
+	if g.pgnStartFullMove == 0 {
+		fen := g.FEN()
+		if tag := g.rules().pgnVariantTag; tag != "" {
+			tags["Variant"] = tag
+		}
+		if fen != STARTING_POSITION_FEN || g.variant != VariantStandard {
+			tags["SetUp"] = "1"
+			tags["FEN"] = fen
+		}
 	}
 	tags["Result"] = g.PGNResult()
 	return tags
@@ -189,8 +210,15 @@ func (g *Game) recordPGNMove(m Move) {
 			g.pgnTags["SetUp"] = "1"
 			g.pgnTags["FEN"] = g.pgnStartFEN
 		}
+		if g.pgnStartFEN != STARTING_POSITION_FEN {
+			if g.pgnTags == nil {
+				g.pgnTags = map[string]string{}
+			}
+			g.pgnTags["SetUp"] = "1"
+			g.pgnTags["FEN"] = g.pgnStartFEN
+		}
 	}
-	g.pgnMoves = append(g.pgnMoves, g.GetMoveSan(m))
+	g.pgnMoves = append(g.pgnMoves, g.GetMoveSanWithoutSuffix(m))
 	g.pgnResult = ""
 	if g.pgnTags != nil {
 		delete(g.pgnTags, "Result")
@@ -227,7 +255,9 @@ func (g *Game) formatPGNMovetext(result string) string {
 		}
 		b.WriteString(move)
 		if turn == BLACK {
-			fullMove++
+			if fullMove < math.MaxInt {
+				fullMove++
+			}
 			turn = WHITE
 		} else {
 			turn = BLACK
@@ -522,6 +552,17 @@ func tokenizePGNMoves(pgn string) []string {
 			}
 			continue
 		}
+		// Punctuation inside a brace comment cannot open a variation, tag, or
+		// line comment. Handle this state before any other delimiters.
+		if braceDepth > 0 {
+			if c == '{' {
+				braceDepth++
+			}
+			if c == '}' {
+				braceDepth--
+			}
+			continue
+		}
 		if c == '\n' {
 			lineStart = true
 			inTag = false
@@ -622,10 +663,18 @@ func trimSANAnnotations(san string) string {
 	san = strings.TrimRightFunc(san, func(r rune) bool {
 		return strings.ContainsRune("+#!?", r)
 	})
-	// Remove leading move numbers if any slipped through (e.g., "12.Nf3").
-	san = strings.TrimLeftFunc(san, func(r rune) bool {
-		return unicode.IsDigit(r) || r == '.'
-	})
+	// A move number needs a period. In particular, the zero in 0-0 is not
+	// a move number and must survive normalization.
+	i := 0
+	for i < len(san) && san[i] >= '0' && san[i] <= '9' {
+		i++
+	}
+	if i < len(san) && san[i] == '.' {
+		for i < len(san) && san[i] == '.' {
+			i++
+		}
+		san = san[i:]
+	}
 	return san
 }
 

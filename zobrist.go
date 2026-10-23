@@ -94,7 +94,7 @@ func (g *Game) computeZobrist() uint64 {
 		}
 	}
 
-	if g.enPassant != 0 && g.hasAdjacentPawnForEnPassant() {
+	if g.enPassant != 0 && g.hasLegalEnPassant() {
 		file := g.enPassant.File()
 		h ^= zobristEnPassant[file]
 	}
@@ -106,32 +106,26 @@ func (g *Game) computeZobrist() uint64 {
 	return h
 }
 
-func (g *Game) hasAdjacentPawnForEnPassant() bool {
-	if g.enPassant == 0 {
+func (g *Game) hasLegalEnPassant() bool {
+	if g.enPassant == 0 || !g.enPassantStateMatchesBoard() {
 		return false
 	}
 
 	ep := g.enPassant
 	if g.turn == WHITE {
-		if ep.Rank() != 2 || ep+8 > 63 || g.squares[ep+8] != B_PAWN {
-			return false
-		}
-		if ep.File() > 0 && ep+7 <= 63 && g.squares[ep+7] == W_PAWN {
+		if ep.File() > 0 && g.squares[ep+7] == W_PAWN && g.canEnPassantMove(ep+7, ep, ep+8) {
 			return true
 		}
-		if ep.File() < 7 && ep+9 <= 63 && g.squares[ep+9] == W_PAWN {
+		if ep.File() < 7 && g.squares[ep+9] == W_PAWN && g.canEnPassantMove(ep+9, ep, ep+8) {
 			return true
 		}
 		return false
 	}
 
-	if ep.Rank() != 5 || ep < 8 || g.squares[ep-8] != W_PAWN {
-		return false
-	}
-	if ep.File() < 7 && ep >= 7 && g.squares[ep-7] == B_PAWN {
+	if ep.File() < 7 && g.squares[ep-7] == B_PAWN && g.canEnPassantMove(ep-7, ep, ep-8) {
 		return true
 	}
-	if ep.File() > 0 && ep >= 9 && g.squares[ep-9] == B_PAWN {
+	if ep.File() > 0 && g.squares[ep-9] == B_PAWN && g.canEnPassantMove(ep-9, ep, ep-8) {
 		return true
 	}
 	return false

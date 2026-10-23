@@ -66,34 +66,29 @@ type castlingSpec struct {
 	safeSquares Bitboard
 }
 
+// Standard castling geometry never changes. Keep it out of the per-node path.
+var standardCastlingSpecs = [16]castlingSpec{
+	CASTLE_WKS: {WHITE, CASTLE_WKS, 60, 62, 63, 61, W_KING, W_ROOK, 0x6000000000000000, 0x7000000000000000},
+	CASTLE_WQS: {WHITE, CASTLE_WQS, 60, 58, 56, 59, W_KING, W_ROOK, 0x0e00000000000000, 0x1c00000000000000},
+	CASTLE_BKS: {BLACK, CASTLE_BKS, 4, 6, 7, 5, B_KING, B_ROOK, 0x60, 0x70},
+	CASTLE_BQS: {BLACK, CASTLE_BQS, 4, 2, 0, 3, B_KING, B_ROOK, 0x0e, 0x1c},
+}
+
 func (g *Game) castlingSpec(right int) (castlingSpec, bool) {
 	color := castlingRightColor(right)
 	if color == NO_COLOR {
 		return castlingSpec{}, false
 	}
+	if g.variant != VariantChess960 {
+		return standardCastlingSpecs[right], true
+	}
 
 	kingside := castlingRightIsKingside(right)
 	kingTo, rookTo := castlingFinalSquares(color, kingside)
-	kingFrom := Square(W_KING_INIT_SQUARE)
-	rookFrom := Square(WKS_ROOK_ORIGINAL_SQUARE)
-
-	switch right {
-	case CASTLE_WQS:
-		rookFrom = WQS_ROOK_ORIGINAL_SQUARE
-	case CASTLE_BKS:
-		kingFrom = B_KING_INIT_SQUARE
-		rookFrom = BKS_ROOK_ORIGINAL_SQUARE
-	case CASTLE_BQS:
-		kingFrom = B_KING_INIT_SQUARE
-		rookFrom = BQS_ROOK_ORIGINAL_SQUARE
-	}
-
-	if g.variant == VariantChess960 {
-		kingFrom = g.kingSquare(color)
-		rookFrom = g.castlingRookFrom[right]
-		if !kingFrom.Valid() || !rookFrom.Valid() {
-			return castlingSpec{}, false
-		}
+	kingFrom := g.kingSquare(color)
+	rookFrom := g.castlingRookFrom[right]
+	if !kingFrom.Valid() || !rookFrom.Valid() {
+		return castlingSpec{}, false
 	}
 
 	spec := castlingSpec{
@@ -163,16 +158,9 @@ func (g *Game) castlingSpecForMove(m Move) (castlingSpec, bool) {
 	if !m.IsCastlingMove() {
 		return castlingSpec{}, false
 	}
-	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
-		spec, ok := g.castlingSpec(right)
-		if !ok {
-			continue
-		}
-		if spec.kingFrom == m.From() && spec.kingTo == m.To() {
-			return spec, true
-		}
-	}
-	return castlingSpec{}, false
+	right := castlingRightForMoveDestination(g.turn, m.To())
+	spec, ok := g.castlingSpec(right)
+	return spec, ok && spec.kingFrom == m.From()
 }
 
 func (g *Game) castlingSpecForUndoMove(m Move, color Color) (castlingSpec, bool) {

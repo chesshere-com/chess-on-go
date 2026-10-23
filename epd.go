@@ -30,7 +30,7 @@ func (r EPDRecord) AvoidMoves() []string {
 
 // ID returns the first `id` operand.
 func (r EPDRecord) ID() (string, bool) {
-	values := r.Operation("id")
+	values := r.Operations["id"]
 	if len(values) == 0 {
 		return "", false
 	}
@@ -91,7 +91,12 @@ func ParseEPD(line string) (EPDRecord, error) {
 		return EPDRecord{}, err
 	}
 
-	ops, err := parseEPDOperations(strings.TrimSpace(strings.TrimPrefix(line, strings.Join(fields[:4], " "))))
+	rest := line
+	for _, field := range fields[:4] {
+		rest = strings.TrimSpace(rest)
+		rest = rest[len(field):]
+	}
+	ops, err := parseEPDOperations(strings.TrimSpace(rest))
 	if err != nil {
 		return EPDRecord{}, err
 	}
@@ -117,7 +122,32 @@ func LoadEPDRecords(input string) ([]EPDRecord, error) {
 
 func parseEPDOperations(text string) (map[string][]string, error) {
 	ops := map[string][]string{}
-	for _, raw := range strings.Split(text, ";") {
+	start := 0
+	quoted, escaped := false, false
+	for i := 0; i <= len(text); i++ {
+		if i < len(text) {
+			c := text[i]
+			if escaped {
+				escaped = false
+				continue
+			}
+			if quoted && c == '\\' {
+				escaped = true
+				continue
+			}
+			if c == '"' {
+				quoted = !quoted
+				continue
+			}
+			if c != ';' || quoted {
+				continue
+			}
+		}
+		if quoted || escaped {
+			return nil, fmt.Errorf("invalid epd quoted operand")
+		}
+		raw := text[start:i]
+		start = i + 1
 		raw = strings.TrimSpace(raw)
 		if raw == "" {
 			continue
@@ -155,6 +185,7 @@ func splitEPDOperation(text string) ([]string, error) {
 		i++
 		var b strings.Builder
 		escaped := false
+		closed := false
 		for ; i < len(text); i++ {
 			c := text[i]
 			if escaped {
@@ -169,11 +200,12 @@ func splitEPDOperation(text string) ([]string, error) {
 			if c == '"' {
 				i++
 				tokens = append(tokens, b.String())
+				closed = true
 				break
 			}
 			b.WriteByte(c)
 		}
-		if escaped || (i >= len(text) && (len(tokens) == 0 || tokens[len(tokens)-1] != b.String())) {
+		if !closed || (i < len(text) && text[i] != ' ' && text[i] != '\t' && text[i] != '\r') {
 			return nil, fmt.Errorf("invalid epd quoted operand")
 		}
 	}

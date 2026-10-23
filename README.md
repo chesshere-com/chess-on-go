@@ -63,10 +63,9 @@ func main() {
 
 ## Public API
 
-New code should use accessor methods instead of reading or mutating exported
-`Game` fields directly. The fields remain exported for compatibility with older
-callers, but they are deprecated and can become internally inconsistent if
-callers mutate them.
+Game state is private. Use accessor methods and defensive snapshots to inspect
+it, and move/loading APIs to update it. The former exported `Game` fields were
+removed in v0.2.0.
 
 Use these stable APIs for normal integration work:
 

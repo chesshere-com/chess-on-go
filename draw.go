@@ -1,6 +1,12 @@
 package chessongo
 
 func (g *Game) hasInsufficientMaterial() bool {
+	if g.variant == VariantKingOfTheHill {
+		return false // Even a bare king can reach the center.
+	}
+	if g.variant == VariantThreeCheck {
+		return g.occupied == g.whites[KING]|g.blacks[KING]
+	}
 	if g.whites[QUEEN] > 0 || g.whites[ROOK] > 0 || g.whites[PAWN] > 0 {
 		return false
 	}
@@ -22,15 +28,8 @@ func (g *Game) hasInsufficientMaterial() bool {
 		return allBishopsOnSameColor(g.whites[BISHOP] | g.blacks[BISHOP])
 	}
 
-	if g.whites[KNIGHT].NumberOfSetBits() > 1 {
-		return false
-	}
-
-	if g.blacks[KNIGHT].NumberOfSetBits() > 1 {
-		return false
-	}
-
-	return true
+	// Two knights, including one per side, can participate in a mating position.
+	return (g.whites[KNIGHT] | g.blacks[KNIGHT]).NumberOfSetBits() <= 1
 }
 
 const (
@@ -39,5 +38,5 @@ const (
 )
 
 func allBishopsOnSameColor(bishops Bitboard) bool {
-	return (bishops & lightSquares == 0) || (bishops & darkSquares == 0)
+	return (bishops&lightSquares == 0) || (bishops&darkSquares == 0)
 }

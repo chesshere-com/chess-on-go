@@ -30,21 +30,21 @@ var unknownVariantRules = variantRules{
 	name:    "unknown",
 }
 
-func rulesForVariant(variant Variant) variantRules {
+func rulesForVariant(variant Variant) *variantRules {
 	switch variant {
 	case VariantStandard:
-		return standardVariantRules
+		return &standardVariantRules
 	case VariantChess960:
-		return chess960VariantRules
+		return &chess960VariantRules
 	case VariantKingOfTheHill:
-		return kingOfTheHillVariantRules
+		return &kingOfTheHillVariantRules
 	case VariantThreeCheck:
-		return threeCheckVariantRules
+		return &threeCheckVariantRules
 	default:
-		return unknownVariantRules
+		return &unknownVariantRules
 	}
 }
 
-func (g *Game) rules() variantRules {
+func (g *Game) rules() *variantRules {
 	return rulesForVariant(g.variant)
 }

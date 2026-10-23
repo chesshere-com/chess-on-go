@@ -32,6 +32,16 @@ func TestLegalMovesMatchNotnilChess(t *testing.T) {
 			theirs := notnilUCIMoves(other)
 
 			require.Equal(t, theirs, ours)
+
+			before := g.Snapshot()
+			for _, theirMove := range other.ValidMoves() {
+				san := (notnil.AlgebraicNotation{}).Encode(other.Position(), theirMove)
+				move, err := g.ParseMoveSAN(san)
+				require.NoError(t, err, san)
+				require.Equal(t, (notnil.UCINotation{}).Encode(other.Position(), theirMove), move.UCI(), san)
+				require.Equal(t, san, g.GetMoveSan(move), move.UCI())
+			}
+			require.Equal(t, before, g.Snapshot(), "notation must not change game state")
 		})
 	}
 }

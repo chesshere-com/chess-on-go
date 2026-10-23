@@ -19,18 +19,10 @@ The preferred public API is method-based:
   `VariantThreeCheck`
 - `GameStatusVariantWin`
 
-The `Game` struct still has exported fields for older callers. Those fields are
-compatibility surface, but they should be treated as read-only implementation
-details. Mutating them directly can create states that no legal chess position
-can produce.
-
-## Deprecated Exported Fields
-
-Deprecated `Game` fields are expected to remain available through a future v1
-line so existing callers have a migration window. New code should not use them.
-
-If a v2 is ever introduced, these fields are candidates for unexporting or
-replacement with read-only view types.
+The former exported `Game` fields were removed in v0.2.0. State is private;
+callers inspect it through accessors, `BoardView`, or `Snapshot` and change it
+through move/loading APIs. Cached move lists remain current after those APIs,
+including cloning and undo.
 
 ## Low-Level Constants And Lookup Tables
 
@@ -64,6 +56,11 @@ Variant-aware FEN and PGN behavior is part of the public compatibility surface:
 state. Binary payloads are same-version persistence data, not a long-term stable
 wire format. Use FEN or PGN when data must survive package upgrades or
 interoperate with other tools.
+
+The binary format stores move counters and repetition counts as unsigned
+32-bit integers. `MarshalBinary` returns an error when a value does not fit;
+it never truncates counters. FEN supports counters through the platform's
+maximum `int`; move application saturates those counters at that maximum.
 
 ## Versioning
 
