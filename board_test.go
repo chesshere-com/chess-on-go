@@ -43,9 +43,10 @@ func TestRepetitionDetection(t *testing.T) {
 }
 
 func TestRepetitionBrokenByEnPassantChange(t *testing.T) {
-	fen := "rnbqkbnr/pppppppp/8/4p3/3P4/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 2"
+	fen := "rnbqkbnr/pppp1ppp/8/3Pp3/8/8/PPP1PPPP/RNBQKBNR w KQkq e6 0 2"
 	g := &Game{}
 	require.NoError(t, g.LoadFEN(fen))
+	initialKey := g.PositionKey()
 	require.False(t, g.isThreefoldRepetition)
 
 	cycle := [][2]string{{"g1", "f3"}, {"g8", "f6"}, {"f3", "g1"}, {"f6", "g8"}}
@@ -60,6 +61,7 @@ func TestRepetitionBrokenByEnPassantChange(t *testing.T) {
 	}
 
 	// After a full cycle the board pieces match but en-passant is cleared, so hash differs.
+	require.NotEqual(t, initialKey, g.PositionKey())
 	require.False(t, g.isThreefoldRepetition)
 }
 

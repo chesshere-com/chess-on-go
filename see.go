@@ -251,7 +251,13 @@ func (g *Game) seeLeastValuableAttacker(
 
 	kingAtts := KING_ATTACKS_FROM[to] & pieces[KING] & occ
 	if kingAtts != 0 {
-		return Square(kingAtts.lsbIndex()), KING, true
+		king := Square(kingAtts.lsbIndex())
+		remaining := occ &^ (Bitboard(1) << king)
+		// Piece arrays retain captured pieces throughout SEE; intersect their
+		// attacks with working occupancy before judging a king recapture.
+		if g.attackersToWithOccupied(to, oppositeColor(side), remaining)&remaining == 0 {
+			return king, KING, true
+		}
 	}
 
 	return 0, EMPTY, false

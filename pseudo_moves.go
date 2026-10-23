@@ -61,6 +61,9 @@ func (g *Game) genSlidingMoves(pieces, ours Bitboard, attacksFrom func(Square, B
 // Generate castling pseudo-legal moves
 func (g *Game) genCastling() {
 	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if g.castling&right == 0 || castlingRightColor(right) != g.turn {
+			continue
+		}
 		spec, ok := g.castlingSpec(right)
 		if !ok {
 			continue

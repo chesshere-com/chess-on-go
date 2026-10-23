@@ -1,5 +1,7 @@
 package chessongo
 
+import "math"
+
 // Checks whether our king is in check or not
 func (g *Game) ComputeIsCheck() bool {
 	var kingBB Bitboard
@@ -61,7 +63,6 @@ func (g *Game) CopyLegalMoves(dst []Move) []Move {
 
 // TryMove applies a move only if it matches one of the current legal moves.
 func (g *Game) TryMove(m Move) error {
-	g.GenerateLegalMoves()
 	for _, legal := range g.legalMoves {
 		if moveMatchesRequest(legal, m) {
 			g.MakeMove(legal)
@@ -93,6 +94,9 @@ func moveMatchesRequest(legal, requested Move) bool {
 	if legal.From() != requested.From() || legal.To() != requested.To() {
 		return false
 	}
+	if requested.IsCastlingMove() && !legal.IsCastlingMove() {
+		return false
+	}
 	if legal.IsPromotionMove() || requested.IsPromotionMove() {
 		return legal.GetPromotionTo() == requested.GetPromotionTo()
 	}
@@ -102,6 +106,13 @@ func moveMatchesRequest(legal, requested Move) bool {
 func (g *Game) MakeMove(m Move) {
 	g.recordPGNMove(m)
 	g.makeMove(m, true)
+	if g.isCheck {
+		suffix := "+"
+		if !g.hasMoves() {
+			suffix = "#"
+		}
+		g.pgnMoves[len(g.pgnMoves)-1] += suffix
+	}
 }
 
 // MakeMoveFast applies a legal move and regenerates legal moves without updating repetition or game-over status.
@@ -144,11 +155,11 @@ func (g *Game) makeMoveInternal(m Move, updatePositionHistory, generateLegalMove
 
 	if g.ShouldResetHalfMoves(m) {
 		g.halfMoves = 0
-	} else {
+	} else if g.halfMoves < math.MaxInt {
 		g.halfMoves++
 	}
 
-	if g.ShouldIncFullMoves(m) {
+	if g.turn == BLACK && g.fullMoves < math.MaxInt {
 		g.fullMoves++
 	}
 

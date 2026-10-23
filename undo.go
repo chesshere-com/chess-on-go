@@ -13,9 +13,14 @@ type GameState struct {
 }
 
 func (g *Game) UndoMove(m Move) {
+	if len(g.history) == 0 {
+		return
+	}
 	if len(g.pgnMoves) > 0 {
 		g.pgnMoves = g.pgnMoves[:len(g.pgnMoves)-1]
 	}
+	g.pgnResult = ""
+	delete(g.pgnTags, "Result")
 	g.undoMove(m, true)
 }
 

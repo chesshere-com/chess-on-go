@@ -7,6 +7,34 @@ Releases use semantic version tags in the form `v*.*.*`, for example
 
 ## Unreleased
 
+- Cache standard castling geometry, skip unavailable castling rights before
+  building move data, and avoid copying variant rule tables in hot paths.
+- Remove redundant legal-move generation and candidate simulations from SAN
+  parsing. Match SAN using stack buffers, and reuse the resulting board's check
+  state when recording PGN moves.
+- Build FEN using one output buffer and parse its fields without a slice
+  allocation. Add reproducible FEN/SAN benchmarks and before/after snapshots.
+- Fix clones losing legal and pseudo-legal move lists; all mutable clone state
+  is now copied independently.
+- Fix Chess960 castling requests selecting an ordinary king step with the same
+  destination, and avoid treating that step as SAN disambiguation.
+- Hash en-passant rights only when a legal capture exists, fixing repetition
+  detection with pinned pawns and discovered checks.
+- Correct material draws for knight-versus-knight, King of the Hill, and
+  Three-check positions.
+- Fix PGN loading of attached move numbers, zero-based castling notation, and
+  punctuation inside comments. Reject unknown variants and movetext after a
+  result; preserve custom starting FEN on export and clear stale results on undo.
+- Fix EPD parsing with variable whitespace, semicolons in quoted operands,
+  escaped quotes, and unterminated quoted operands.
+- Reject invalid binary positions, castling metadata, and repetition counts;
+  check binary sizes without integer overflow and reject counter truncation.
+  Validate the en-passant rank and vacated starting square in FEN and binary data.
+- Prevent move-counter overflow, return zero for negative perft depths, and
+  exclude defended king recaptures from static exchange evaluation.
+- Add regression tests, binary fuzzing, and PGN export/reload fuzz checks; fix
+  scheduled CI fuzzing to target one package. Correct outdated API documentation.
+
 ## v0.22.1 - 2026-05-31
 
 - Added MIT License to resolve pkg.go.dev license restrictions.

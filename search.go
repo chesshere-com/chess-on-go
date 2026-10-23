@@ -42,8 +42,11 @@ func (b *SearchBoard) UndoMove(move Move) {
 	b.game.undoMoveNoGenerate(move)
 }
 
-// Perft returns the legal move tree node count at depth.
+// Perft returns the legal move tree node count at depth. Negative depths return zero.
 func (b *SearchBoard) Perft(depth int) uint64 {
+	if depth < 0 {
+		return 0
+	}
 	return b.perft(depth)
 }
 

@@ -1,0 +1,130 @@
+# Performance audit on Apple M5 Pro, Go 1.27.1 darwin/arm64
+# Baseline commit: d4d0df625bb28a86bce66b9a7710898471531aab
+# Six alternating samples; GOMAXPROCS=1; benchtime=150ms; no tests running concurrently.
+# Command: chess-audit-before.test -test.run=^$ -test.bench=BenchmarkFENExport$|BenchmarkParseSAN$|BenchmarkFormatSAN$|BenchmarkGenerateLegalMoves|BenchmarkLoadPGN$|BenchmarkLoadPGN_LongGame$|BenchmarkPerft/(InitialDepth4|Position2Depth4)$|BenchmarkSEE$|BenchmarkInitializeGameFromFEN -test.benchmem -test.benchtime=150ms -test.count=1
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   37350	      6767 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	    7778	    102407 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	  105540	      2194 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   19674	      8179 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   52989	      4190 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   72811	      3187 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	  104019	      3304 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  468637	       415.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  266560	       769.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1000000	       164.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  843469	       530.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    2600	     91330 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     764	    255788 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      37	   4772556 ns/op	  41.34 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       1	 151907750 ns/op	  26.90 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	 1000000	       342.7 ns/op	       0 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   32938	      5225 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	    3794	     51569 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	   48096	      3392 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   48633	      3589 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   40016	      6157 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   85513	      4407 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	   90196	      3660 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  622639	       389.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  405976	       845.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1000000	       248.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  274897	       610.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    3414	    119734 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     814	    244986 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      50	   3866178 ns/op	  51.03 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       2	  78136480 ns/op	  52.29 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	  865818	       282.1 ns/op	       0 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   52160	      4214 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	   10000	     49494 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	  138064	      1417 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   86635	      4083 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   60519	      6195 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   93890	      3005 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	   58485	      4158 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  404364	       421.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  260410	       683.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1000000	       160.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  688200	       586.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    1994	     82358 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     649	    309258 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      49	   5891605 ns/op	  33.49 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       2	  89316562 ns/op	  45.74 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	  457912	       763.7 ns/op	       0 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   29223	      9014 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	    2662	     84058 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	   94801	      1776 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   98100	      3085 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   76232	      5033 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   86898	      4261 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	   44816	      3810 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  327702	       498.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  340572	       933.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1611894	       187.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  589119	       471.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    3390	     88126 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     788	    402721 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      55	   4315885 ns/op	  45.71 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       2	 146856000 ns/op	  27.82 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	  613726	       297.5 ns/op	       0 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   48976	      5453 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	    4622	     78358 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	  161702	      2112 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   63297	      3906 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   65564	      2854 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   96114	      1982 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	   89650	      3573 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  838443	       444.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  357553	       743.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1000000	       161.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  697674	       357.6 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    3374	    109873 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     646	    315367 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      26	   6636210 ns/op	  29.73 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       2	  91852875 ns/op	  44.48 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	  468489	       351.5 ns/op	       0 B/op	       0 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkFENExport             	   33418	      5090 ns/op	    1408 B/op	      80 allocs/op
+BenchmarkParseSAN              	   10000	     49863 ns/op	   29784 B/op	      94 allocs/op
+BenchmarkFormatSAN             	  116832	      3039 ns/op	    1560 B/op	       4 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1         	   55305	      3659 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1         	   52220	      5213 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                	   72612	      3453 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkInitializeGameFromFEN/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                  	   46605	      6071 ns/op	    1776 B/op	       6 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1                        	  867364	       443.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R_w_KQkq_-_0_1            	  334462	       902.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/4k3/8/8/8/8/8/8/4K3_w_-_-_0_1                                                   	 1000000	       201.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkGenerateLegalMoves/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR_w_KQkq_-_0_1#01                     	  481161	       476.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkLoadPGN                                                                                            	    4591	    118267 ns/op	   31344 B/op	     162 allocs/op
+BenchmarkLoadPGN_LongGame                                                                                   	     572	    268364 ns/op	  101056 B/op	     480 allocs/op
+BenchmarkPerft/InitialDepth4                                                                                	      61	   7668601 ns/op	  25.73 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4                                                                              	       1	 157871291 ns/op	  25.88 MB/s	     512 B/op	       3 allocs/op
+BenchmarkSEE                                                                                                	  929172	       398.9 ns/op	       0 B/op	       0 allocs/op
+PASS

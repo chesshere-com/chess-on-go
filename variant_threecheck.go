@@ -55,10 +55,3 @@ func parseThreeCheckCounters(field string) ([2]uint8, error) {
 	counts[blackStateIndex] = uint8(field[3] - '0')
 	return counts, nil
 }
-
-func (g *Game) threeCheckFENField() string {
-	return fmt.Sprintf("+%d+%d",
-		g.variantState.checksGiven[whiteStateIndex],
-		g.variantState.checksGiven[blackStateIndex],
-	)
-}

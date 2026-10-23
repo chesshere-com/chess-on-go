@@ -1,0 +1,60 @@
+# Longer perft comparison: Go 1.27.1 darwin/arm64, Apple M5 Pro
+# Baseline commit: d4d0df625bb28a86bce66b9a7710898471531aab
+# Eight alternating samples; GOMAXPROCS=1; benchtime=1s; no other checks running.
+# Command: chess-audit-after.test -test.run=^$ -test.bench=BenchmarkPerft/(InitialDepth4|Position2Depth4)$ -test.benchmem -test.benchtime=1s -test.count=1
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     488	   3465122 ns/op	  56.93 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      26	  49378731 ns/op	  82.74 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     324	   3471571 ns/op	  56.83 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      21	  50721546 ns/op	  80.55 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     284	   3922634 ns/op	  50.29 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      30	  50108045 ns/op	  81.54 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     336	   3168713 ns/op	  62.26 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      31	  59191687 ns/op	  69.02 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     308	   3273504 ns/op	  60.27 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      28	  64318722 ns/op	  63.52 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     278	   3804045 ns/op	  51.86 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      30	  67439820 ns/op	  60.58 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     321	   3461611 ns/op	  56.99 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      32	  49777454 ns/op	  82.08 MB/s	     512 B/op	       3 allocs/op
+PASS
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go
+cpu: Apple M5 Pro
+BenchmarkPerft/InitialDepth4         	     447	   3235325 ns/op	  60.98 MB/s	     512 B/op	       3 allocs/op
+BenchmarkPerft/Position2Depth4       	      25	  44626893 ns/op	  91.55 MB/s	     512 B/op	       3 allocs/op
+PASS

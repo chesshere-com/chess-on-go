@@ -1,7 +1,6 @@
 package chessongo
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 )
@@ -186,18 +185,19 @@ func (g *Game) loadFEN(fen string, variant Variant) error {
 	return nil
 }
 
-func splitFENFieldsForVariant(fen string, variant Variant) ([]string, bool) {
+func splitFENFieldsForVariant(fen string, variant Variant) ([7]string, bool) {
 	expected := 6
 	if variant == VariantThreeCheck {
 		expected = 7
 	}
-	fields := make([]string, 0, expected)
+	var fields [7]string
+	count := 0
 	i := 0
 	for i < len(fen) && fen[i] == ' ' {
 		i++
 	}
 	for i < len(fen) {
-		if len(fields) >= expected {
+		if count >= expected {
 			return fields, false
 		}
 		start := i
@@ -207,12 +207,13 @@ func splitFENFieldsForVariant(fen string, variant Variant) ([]string, bool) {
 		if start == i {
 			return fields, false
 		}
-		fields = append(fields, fen[start:i])
+		fields[count] = fen[start:i]
+		count++
 		for i < len(fen) && fen[i] == ' ' {
 			i++
 		}
 	}
-	return fields, len(fields) == expected
+	return fields, count == expected
 }
 
 func fenPiece(c byte) (Piece, bool) {
@@ -248,51 +249,51 @@ func fenPiece(c byte) (Piece, bool) {
 
 // ToFEN returns the FEN representation of the current game state.
 func (g *Game) ToFEN() string {
-	var pieces, turn, castling, enPassant string
-
-	pieces = ""
+	// Enough for a full board, two maximum-width counters and variant state.
+	var buffer [128]byte
+	out := buffer[:0]
 	for rank := 0; rank < 8; rank++ {
 		emptyCount := 0
 		for file := 0; file < 8; file++ {
 			idx := rank*8 + file
 			if g.squares[idx] != EMPTY {
 				if emptyCount > 0 {
-					pieces += strconv.Itoa(emptyCount)
+					out = append(out, byte('0'+emptyCount))
 					emptyCount = 0
 				}
-				pieces += string(PIECE_TO_RUNE[g.squares[idx]])
+				out = append(out, byte(g.squares[idx].ToRune()))
 			} else {
 				emptyCount++
 			}
 		}
 		if emptyCount > 0 {
-			pieces += strconv.Itoa(emptyCount)
+			out = append(out, byte('0'+emptyCount))
 		}
 		if rank < 7 {
-			pieces += "/"
+			out = append(out, '/')
 		}
 	}
 
-	if g.turn == WHITE {
-		turn = "w"
-	} else {
-		turn = "b"
+	turn := byte('w')
+	if g.turn == BLACK {
+		turn = 'b'
 	}
-
-	castling = g.fenCastlingField()
-
+	out = append(out, ' ', turn, ' ')
+	out = g.appendFENCastling(out)
+	out = append(out, ' ')
 	if g.enPassant == 0 {
-		enPassant = "-"
+		out = append(out, '-')
 	} else {
-		rank, file := squareCoords(g.enPassant)
-		enPassant = FILE_TO_STRING[file] + RANK_TO_STRING[rank]
+		out = append(out, byte('a'+g.enPassant.File()), byte('8'-g.enPassant.Rank()))
 	}
-
-	fen := fmt.Sprintf("%s %s %s %s %d %d", pieces, turn, castling, enPassant, g.halfMoves, g.fullMoves)
+	out = append(out, ' ')
+	out = strconv.AppendInt(out, int64(g.halfMoves), 10)
+	out = append(out, ' ')
+	out = strconv.AppendInt(out, int64(g.fullMoves), 10)
 	if g.variant == VariantThreeCheck {
-		fen += " " + g.threeCheckFENField()
+		out = append(out, ' ', '+', '0'+g.variantState.checksGiven[whiteStateIndex], '+', '0'+g.variantState.checksGiven[blackStateIndex])
 	}
-	return fen
+	return string(out)
 }
 
 func parseFENNumber(token string) (int, error) {
@@ -466,13 +467,12 @@ func (g *Game) kingSquare(color Color) Square {
 	return noSquare
 }
 
-func (g *Game) fenCastlingField() string {
+func (g *Game) appendFENCastling(out []byte) []byte {
 	if g.castling == 0 {
-		return "-"
+		return append(out, '-')
 	}
 
 	if g.variant != VariantChess960 {
-		out := make([]byte, 0, 4)
 		if (g.castling & CASTLE_WKS) > 0 {
 			out = append(out, 'K')
 		}
@@ -485,10 +485,10 @@ func (g *Game) fenCastlingField() string {
 		if (g.castling & CASTLE_BQS) > 0 {
 			out = append(out, 'q')
 		}
-		return string(out)
+		return out
 	}
 
-	out := make([]byte, 0, 4)
+	start := len(out)
 	for _, right := range []int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
 		if (g.castling & right) == 0 {
 			continue
@@ -503,10 +503,10 @@ func (g *Game) fenCastlingField() string {
 		}
 		out = append(out, letter)
 	}
-	if len(out) == 0 {
-		return "-"
+	if len(out) == start {
+		return append(out, '-')
 	}
-	return string(out)
+	return out
 }
 
 func (g *Game) castlingRightsMatchBoard() bool {
@@ -546,16 +546,22 @@ func (g *Game) castlingRightsMatchBoard() bool {
 		if g.squares[rookFrom] != rookPiece {
 			return false
 		}
+		if (rookFrom.File() > king.File()) != castlingRightIsKingside(right) || rookFrom == king {
+			return false
+		}
 	}
 	return true
 }
 
 func (g *Game) enPassantStateMatchesBoard() bool {
 	ep := g.enPassant
-	if g.turn == WHITE {
-		return ep+8 <= 63 && g.squares[ep] == EMPTY && g.squares[ep+8] == B_PAWN
+	if !ep.Valid() || g.squares[ep] != EMPTY {
+		return false
 	}
-	return ep >= 8 && g.squares[ep] == EMPTY && g.squares[ep-8] == W_PAWN
+	if g.turn == WHITE {
+		return ep.Rank() == 2 && g.squares[ep+8] == B_PAWN && g.squares[ep-8] == EMPTY
+	}
+	return ep.Rank() == 5 && g.squares[ep-8] == W_PAWN && g.squares[ep+8] == EMPTY
 }
 
 func (g *Game) sideNotToMoveInCheck() bool {

@@ -1,5 +1,10 @@
 package chessongo
 
+import (
+	"maps"
+	"slices"
+)
+
 // Castling permissions
 const (
 	CASTLE_WKS = 1 //White king side castling  0001
@@ -115,50 +120,13 @@ func NewGame() *Game {
 }
 
 func CloneGame(g *Game) Game {
-	clone := Game{
-		whitePieces:           g.whitePieces,
-		blackPieces:           g.blackPieces,
-		whites:                [7]Bitboard{},
-		blacks:                [7]Bitboard{},
-		squares:               [64]Piece{},
-		occupied:              g.occupied,
-		enPassant:             g.enPassant,
-		castling:              g.castling,
-		halfMoves:             g.halfMoves,
-		fullMoves:             g.fullMoves,
-		turn:                  g.turn,
-		variant:               g.variant,
-		variantState:          g.variantState,
-		castlingRookFrom:      g.castlingRookFrom,
-		pseudoMoves:           []Move{},
-		legalMoves:            []Move{},
-		positionHistory:       map[uint64]int{},
-		zobristHash:           g.zobristHash,
-		isCheck:               g.isCheck,
-		isCheckmate:           g.isCheckmate,
-		isStalemate:           g.isStalemate,
-		isMaterialDraw:        g.isMaterialDraw,
-		isThreefoldRepetition: g.isThreefoldRepetition,
-		isFiftyMoveRule:       g.isFiftyMoveRule,
-		isSeventyFiveMoveRule: g.isSeventyFiveMoveRule,
-		isFinished:            g.isFinished,
-		winner:                g.winner,
-		status:                g.status,
-		history:               make([]GameState, len(g.history)),
-		pgnTags:               cloneStringMap(g.pgnTags),
-		pgnMoves:              append([]string(nil), g.pgnMoves...),
-		pgnResult:             g.pgnResult,
-		pgnStartTurn:          g.pgnStartTurn,
-		pgnStartFullMove:      g.pgnStartFullMove,
-		pgnStartFEN:           g.pgnStartFEN,
-	}
-	copy(clone.whites[:], g.whites[:])
-	copy(clone.blacks[:], g.blacks[:])
-	copy(clone.squares[:], g.squares[:])
-	copy(clone.history, g.history)
-	for k, v := range g.positionHistory {
-		clone.positionHistory[k] = v
-	}
+	clone := *g
+	clone.pseudoMoves = slices.Clone(g.pseudoMoves)
+	clone.legalMoves = slices.Clone(g.legalMoves)
+	clone.history = slices.Clone(g.history)
+	clone.positionHistory = maps.Clone(g.positionHistory)
+	clone.pgnTags = maps.Clone(g.pgnTags)
+	clone.pgnMoves = slices.Clone(g.pgnMoves)
 	return clone
 }
 

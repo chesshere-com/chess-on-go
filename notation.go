@@ -58,7 +58,8 @@ func (g *Game) TryMoveSAN(san string) error {
 	if err != nil {
 		return err
 	}
-	return g.TryMove(move)
+	g.MakeMove(move)
+	return nil
 }
 
 // ParseMoveSAN parses SAN by matching against the current legal move list.
@@ -68,9 +69,12 @@ func (g *Game) ParseMoveSAN(san string) (Move, error) {
 		return 0, ErrInvalidMoveNotation
 	}
 
-	g.GenerateLegalMoves()
+	targetSquare := getTargetSquare(target)
 	for _, move := range g.legalMoves {
-		if normalizeSANInput(g.GetMoveSan(move)) == target || normalizeSANInput(g.GetMoveSanWithoutSuffix(move)) == target {
+		if targetSquare >= 0 && int(move.To()) != targetSquare {
+			continue
+		}
+		if g.matchesSAN(move, target) {
 			return move, nil
 		}
 	}
@@ -83,7 +87,7 @@ func normalizeSANInput(san string) string {
 		return strings.ContainsRune("+#!?", r)
 	})
 	if strings.HasPrefix(san, "0-0") {
-		san = "O-O" + strings.TrimPrefix(san, "0-0")
+		san = strings.ReplaceAll(san, "0", "O")
 	}
 	return san
 }

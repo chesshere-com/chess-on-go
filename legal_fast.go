@@ -494,10 +494,17 @@ func (g *Game) canEnPassantMove(from, to, captured Square) bool {
 }
 
 func (g *Game) appendLegalCastlingMoves(dst []Move, info *legalMoveInfo) []Move {
-	if g.castling == 0 {
+	rights := g.castling & (CASTLE_WKS | CASTLE_WQS)
+	if g.turn == BLACK {
+		rights = g.castling & (CASTLE_BKS | CASTLE_BQS)
+	}
+	if rights == 0 {
 		return dst
 	}
 	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		if rights&right == 0 {
+			continue
+		}
 		spec, ok := g.castlingSpec(right)
 		if !ok {
 			continue
@@ -511,14 +518,9 @@ func (g *Game) appendLegalCastlingMoves(dst []Move, info *legalMoveInfo) []Move 
 		if g.occupied&spec.emptyMask != 0 {
 			continue
 		}
-		dst = g.appendLegalCastle(dst, NewCastlingMove(spec.kingFrom, spec.kingTo), info)
-	}
-	return dst
-}
-
-func (g *Game) appendLegalCastle(dst []Move, move Move, info *legalMoveInfo) []Move {
-	if g.canKingMoveWithInfo(move, info) {
-		dst = append(dst, move)
+		if g.castlingKingPathIsSafe(spec, oppositeColor(g.turn)) {
+			dst = append(dst, NewCastlingMove(spec.kingFrom, spec.kingTo))
+		}
 	}
 	return dst
 }

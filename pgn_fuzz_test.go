@@ -12,6 +12,8 @@ func FuzzLoadPGNDoesNotPanic(f *testing.F) {
 		"1. e4 (1... e5) 2. Nf3",
 		"invalid moves or annotations",
 		"1. e4? e5! 2. Nf3+- Nc6~",
+		"1.e4 1...e5 2.Nf3 2...Nc6",
+		"1. e4 {punctuation ( ; inside comment} e5",
 	}
 	for _, seed := range seeds {
 		f.Add(seed)
@@ -24,6 +26,15 @@ func FuzzLoadPGNDoesNotPanic(f *testing.F) {
 			}
 		}()
 		g := &Game{}
-		_ = g.LoadPGN(pgn)
+		if err := g.LoadPGN(pgn); err == nil {
+			exported := g.PGN()
+			replayed, err := LoadPGNGame(exported)
+			if err != nil {
+				t.Fatalf("cannot reload exported PGN %q: %v", exported, err)
+			}
+			if replayed.FEN() != g.FEN() || replayed.PGNResult() != g.PGNResult() {
+				t.Fatalf("PGN round-trip changed position or result for %q", pgn)
+			}
+		}
 	})
 }

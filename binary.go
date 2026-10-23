@@ -3,6 +3,7 @@ package chessongo
 import (
 	"encoding/binary"
 	"errors"
+	"math"
 )
 
 const (
@@ -17,6 +18,17 @@ const (
 
 // MarshalBinary encodes the board state into a byte slice.
 func (g *Game) MarshalBinary() ([]byte, error) {
+	if g.halfMoves < 0 || uint64(g.halfMoves) > math.MaxUint32 || g.fullMoves < 1 || uint64(g.fullMoves) > math.MaxUint32 {
+		return nil, errors.New("move counter exceeds binary format range")
+	}
+	if uint64(len(g.positionHistory)) > math.MaxUint32 || len(g.positionHistory) > (math.MaxInt-binaryHeaderSize-binaryFixedPayloadSizeV2)/binaryHistoryEntrySize {
+		return nil, errors.New("position history exceeds binary format range")
+	}
+	for _, count := range g.positionHistory {
+		if count < 1 || uint64(count) > math.MaxUint32 {
+			return nil, errors.New("invalid position history count")
+		}
+	}
 	buf := make([]byte, binaryHeaderSize+binaryFixedPayloadSizeV2+len(g.positionHistory)*binaryHistoryEntrySize)
 
 	copy(buf[0:binaryHeaderSize], binaryMagicV2)
@@ -98,15 +110,15 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 	}
 	decoded.halfMoves = int(binary.LittleEndian.Uint32(data[offset+3 : offset+7]))
 	decoded.fullMoves = int(binary.LittleEndian.Uint32(data[offset+7 : offset+11]))
-	if decoded.fullMoves < 1 {
+	if decoded.halfMoves < 0 || decoded.fullMoves < 1 {
 		return errors.New("invalid fullmove number in binary board")
 	}
 
-	count := int(binary.LittleEndian.Uint32(data[offset+11 : offset+15]))
-	expectedSize := binaryHeaderSize + fixedPayloadSize + count*binaryHistoryEntrySize
-	if len(data) != expectedSize {
+	count64 := uint64(binary.LittleEndian.Uint32(data[offset+11 : offset+15]))
+	if uint64(len(data)-binaryHeaderSize-fixedPayloadSize) != count64*binaryHistoryEntrySize {
 		return errors.New("insufficient data for position history")
 	}
+	count := int(count64)
 
 	offset += 15
 	if magic == binaryMagicV2 {
@@ -135,9 +147,21 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 	if !decoded.castlingRightsMatchBoard() {
 		return errors.New("invalid castling rights in binary board")
 	}
+	for _, right := range [...]int{CASTLE_WKS, CASTLE_WQS, CASTLE_BKS, CASTLE_BQS} {
+		rook := decoded.castlingRookFrom[right]
+		if rook > noSquare || (decoded.variant != VariantChess960 && rook != defaultCastlingRookFrom()[right]) {
+			return errors.New("invalid castling rook in binary board")
+		}
+	}
 
 	if decoded.whites[KING].NumberOfSetBits() != 1 || decoded.blacks[KING].NumberOfSetBits() != 1 {
 		return errors.New("invalid king count in binary board")
+	}
+	if (decoded.whites[PAWN]|decoded.blacks[PAWN])&(RANK1_MASK|RANK8_MASK) != 0 {
+		return errors.New("pawn on promotion rank in binary board")
+	}
+	if decoded.sideNotToMoveInCheck() {
+		return errors.New("side not to move is in check in binary board")
 	}
 	if decoded.enPassant != 0 && !decoded.enPassantStateMatchesBoard() {
 		return errors.New("invalid en-passant state in binary board")
@@ -147,6 +171,9 @@ func (g *Game) UnmarshalBinary(data []byte) error {
 	for i := 0; i < count; i++ {
 		hash := binary.LittleEndian.Uint64(data[offset : offset+8])
 		c := int(binary.LittleEndian.Uint32(data[offset+8 : offset+12]))
+		if c < 1 || decoded.positionHistory[hash] != 0 {
+			return errors.New("invalid position history entry")
+		}
 		decoded.positionHistory[hash] = c
 		offset += binaryHistoryEntrySize
 	}
