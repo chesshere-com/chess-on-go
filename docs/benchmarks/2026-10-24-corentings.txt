@@ -1,0 +1,141 @@
+# Measured: 2026-10-24
+# chess-on-go: fc6ae9c6837ff8d2748bd6e66a1bdba87df9890e
+# corentings/chess: v2.6.1, commit 6771e791c92afd4383708b601cc88c333cde6954
+# Runtime: Go 1.27.1, GOMAXPROCS=1, Apple M5 Pro, darwin/arm64
+# Command (in benchmarks/corentings): GOMAXPROCS=1 go test -run ^TestEquivalentWorkloads$ -bench ^BenchmarkCompare$ -benchmem -benchtime=250ms -count=8 .
+# Eight sequential samples per case; see benchmarks/corentings/README.md for timing boundaries.
+
+goos: darwin
+goarch: arm64
+pkg: github.com/chesshere-com/chess-on-go/benchmarks/corentings
+cpu: Apple M5 Pro
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  280852	      1055 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  287881	      1048 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  307795	       994.3 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  328395	       983.1 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  312781	       984.5 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  303852	      1024 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  282894	      1070 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/chess-on-go         	  258135	      1162 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     28808 ns/op	    4468 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     29305 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     29415 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     28462 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     29553 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     29142 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     29174 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Initial/corentings          	   10000	     28835 ns/op	    4465 B/op	      20 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     171	   1675999 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     189	   1579895 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     188	   1578084 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     190	   1570591 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     192	   1605208 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     190	   1570900 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     192	   1569834 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/chess-on-go                        	     188	   1579018 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  36294250 ns/op	34217539 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  38251434 ns/op	34217548 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  37862155 ns/op	34217539 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  40154821 ns/op	34217548 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  40209470 ns/op	34217548 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  40185732 ns/op	34217544 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  39785268 ns/op	34217541 B/op	   38557 allocs/op
+BenchmarkCompare/Perft/Initial/corentings                         	       7	  40048792 ns/op	34217541 B/op	   38557 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  271198	      1319 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  214910	      1354 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  230806	      1324 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  240604	      1356 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  230683	      1266 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  231789	      1264 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  248242	      1219 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/chess-on-go        	  270691	      1183 ns/op	    2128 B/op	       6 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    9626	     36126 ns/op	   20632 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    9823	     35999 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    9394	     35545 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	   10000	     35392 ns/op	   20628 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    9112	     35945 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	   10000	     40097 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    8713	     37606 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/LoadFENAndLegalMoves/Kiwipete/corentings         	    8742	     38765 ns/op	   20629 B/op	      22 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     484	    607085 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     520	    577761 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     477	    571780 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     542	    547111 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     541	    548026 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     511	    554027 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     554	    537156 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/chess-on-go                       	     558	    512367 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      15	  18214883 ns/op	37485936 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      15	  18070292 ns/op	37485921 B/op	   15089 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      15	  18399800 ns/op	37485927 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      16	  18268852 ns/op	37485922 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      15	  18806356 ns/op	37485927 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      14	  19695333 ns/op	37485938 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      14	  20835247 ns/op	37485924 B/op	   15090 allocs/op
+BenchmarkCompare/Perft/Kiwipete/corentings                        	      14	  20330601 ns/op	37485922 B/op	   15090 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  799288	       404.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  857152	       423.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  721586	       428.6 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  717925	       426.4 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  726934	       424.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  743332	       431.9 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  710857	       442.3 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/chess-on-go                    	  698817	       447.1 ns/op	      64 B/op	       1 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  804145	       467.0 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  734528	       494.5 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  717266	       482.7 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  799502	       447.9 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  815401	       457.0 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  832340	       445.9 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  819848	       442.1 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/FENExport/Initial/corentings                     	  935404	       456.8 ns/op	     176 B/op	       6 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10983612	        27.20 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10809073	        27.54 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	11350396	        26.63 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10539906	        27.28 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10310133	        27.87 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10221986	        27.01 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	11699479	        26.39 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/chess-on-go         	10619812	        28.25 ns/op	      80 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  507564	       608.0 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  556680	       590.2 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  490092	       603.7 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  510387	       623.8 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  473403	       656.0 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  508100	       710.4 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  480012	       769.4 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/CachedLegalMovesCopy/Initial/corentings          	  487111	       715.9 ns/op	    2688 B/op	       1 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 4923722	        58.59 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 5941215	        57.01 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 5130733	        62.52 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 4802202	        60.79 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 4883587	        60.92 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 5228742	        54.48 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 5657259	        49.97 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/chess-on-go                     	 5676325	        52.89 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   75927	      3744 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   81596	      3749 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   82834	      3697 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   83743	      3868 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   59377	      4271 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   85854	      3784 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   81631	      3731 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/ParseSAN/Initial/corentings                      	   81700	      3748 ns/op	    1816 B/op	      30 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   25941	     11417 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   26246	     11484 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   26286	     11184 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   25827	     11718 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   25660	     12446 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   25305	     11703 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   26595	     11386 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/chess-on-go                      	   25056	     11774 ns/op	    7832 B/op	      59 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2096	    147165 ns/op	  143852 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2031	    147839 ns/op	  143838 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2125	    145497 ns/op	  143837 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2058	    147835 ns/op	  143837 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2030	    147011 ns/op	  143838 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2020	    146838 ns/op	  143838 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2084	    140760 ns/op	  143837 B/op	     431 allocs/op
+BenchmarkCompare/LoadPGN/15Plies/corentings                       	    2106	    140417 ns/op	  143838 B/op	     431 allocs/op
+PASS
+ok  	github.com/chesshere-com/chess-on-go/benchmarks/corentings	40.701s

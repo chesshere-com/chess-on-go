@@ -80,7 +80,7 @@ benchmark definitions were included in both binaries. Values below are medians.
 | Format `Nf3` SAN, initial position | 2.153 µs | 112.7 ns | 19.1× | 4 → 1 |
 | Generate moves, initial position | 432.4 ns | 277.8 ns | 1.6× | 0 → 0 |
 | Generate moves, Kiwipete | 807.8 ns | 465.7 ns | 1.7× | 0 → 0 |
-| Load PGN, 17 plies | 100.60 µs | 34.60 µs | 2.9× | 162 → 58 |
+| Load PGN, 15 plies | 100.60 µs | 34.60 µs | 2.9× | 162 → 58 |
 | Load PGN, 50 plies | 288.8 µs | 120.9 µs | 2.4× | 480 → 136 |
 
 These comparisons were significant at `p <= 0.004` in `benchstat`. Host timing
